@@ -25,14 +25,12 @@ namespace Wosh
         public int MaxColumns;
         public int MaxRows;
 
-
         public WoshWindow()
         {
             Canvas = new Canvas();
             MaxColumns = 2;
             MaxRows = 10;
         }
-
 
         public void DrawSegment(int column, int row)
         {
@@ -46,7 +44,6 @@ namespace Wosh
             Canvas.SetTop(r, row*r.Height);
             Canvas.Children.Add(r);
 
-
             TextBlock txt = new TextBlock();
             txt.Text = "Project";
             txt.Foreground = new SolidColorBrush(Colors.Black);
@@ -57,10 +54,8 @@ namespace Wosh
             Canvas.SetTop(txt, (row * r.Height) + (r.Height / 3));
             Canvas.Children.Add(txt);
 
-
             Content = Canvas;
         }
-
 
         private void DrawScreen(object sender, RoutedEventArgs e)
         {
@@ -72,7 +67,6 @@ namespace Wosh
                 }
             }
         }
-
 
         private void RedrawScreen(object sender, SizeChangedEventArgs e)
         {
