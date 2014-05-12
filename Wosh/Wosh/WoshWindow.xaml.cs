@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using NUnit.Framework;
 
 namespace Wosh
 {
@@ -79,17 +78,6 @@ namespace Wosh
         {
             Canvas = new Canvas();
             DrawScreen(sender, e);
-        }
-    }
-
-    [TestFixture]
-    public class WoshTest
-    {
-        [Test]
-        public static void play() {
-            int o = 1;
-            int e = 0;
-            Console.WriteLine("Error: {0}", o/e);
         }
     }
 }
