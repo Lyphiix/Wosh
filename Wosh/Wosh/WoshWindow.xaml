@@ -1,0 +1,9 @@
+﻿<Window x:Class="Wosh.WoshWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Wosh"
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        Loaded="DrawScreen"
+        SizeChanged="RedrawScreen">
+</Window>
