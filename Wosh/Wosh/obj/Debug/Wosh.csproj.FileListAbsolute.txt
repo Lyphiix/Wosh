@@ -26,3 +26,4 @@ C:\Users\athompson\Desktop\GitHub\Wosh\Wosh\Wosh\bin\Debug\Wosh.exe
 C:\Users\athompson\Desktop\GitHub\Wosh\Wosh\Wosh\bin\Debug\Wosh.pdb
 C:\Users\athompson\Desktop\GitHub\Wosh\Wosh\Wosh\bin\Debug\nunit.framework.dll
 C:\Users\athompson\Desktop\GitHub\Wosh\Wosh\Wosh\bin\Debug\nunit.framework.xml
+C:\Users\bhall\Desktop\GitHub\Wosh\Wosh\Wosh\bin\Debug\nunit.framework.xml
