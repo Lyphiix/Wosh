@@ -3,7 +3,5 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Wosh"
         WindowState="Maximized"
-        WindowStartupLocation="CenterScreen"
-        Loaded="DrawScreen"
-        SizeChanged="RedrawScreen">
+        WindowStartupLocation="CenterScreen">
 </Window>

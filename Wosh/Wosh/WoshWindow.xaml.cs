@@ -1,90 +1,109 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Wosh.logic;
 
 namespace Wosh
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class WoshWindow : Window
     {
-        private Canvas Canvas;
+        private readonly Canvas _canvas;
         
-
         public int MaxColumns;
         public int MaxRows;
 
+        //public IXmlParser TheParser;
+
         public WoshWindow()
         {
-            Canvas = new Canvas();
+            InitializeComponent();
+            _canvas = new Canvas();
             MaxColumns = 2;
             MaxRows = 10;
         }
 
-        private void DrawScreen(object sender, RoutedEventArgs e)
+        protected override void OnRender(DrawingContext drawingContext)
         {
-            for (int i = 0; i < MaxColumns; i++)
+            DrawScreen();
+        }
+
+        //private void DrawScreen(List<MetaData> metaDatas)
+        private void DrawScreen()
+        {
+            var counter = 0;
+            for (var i = 0; i < MaxColumns; i++)
             {
-                for (int j = 0; j < MaxRows; j++)
+                for (var j = 0; j < MaxRows; j++)
                 {
-                    DrawSegment(i, j);
+                    var meta = new MetaData
+                    {
+                        Name = "Project",
+                        Activity = "Sleeping",
+                        LastBuildLabel = "(null)",
+                        LastBuildStatus = "Success",
+                        LastBuildTime = "(null)",
+                        WebUrl = "http://www.this-is-stupid.com"
+                    };
+                    if (j == 1)
+                    {
+                        meta.Activity = "Building";
+                    } else if (j == 5)
+                    {
+                        meta.LastBuildStatus = "Failure";
+                    }
+                    DrawSegment(i, j, meta);
                 }
             }
         }
 
-        private void RedrawScreen(object sender, SizeChangedEventArgs e)
+        private void DrawSegment(int column, int row, MetaData meta)
         {
-            Canvas = new Canvas();
-            DrawScreen(sender, e);
+            var rectangle = new Rectangle
+                {
+                    Width = (ActualWidth - 16)/MaxColumns,
+                    Height = (ActualHeight - 39)/MaxRows,
+                    Stroke = new SolidColorBrush(Colors.Black),
+                    StrokeThickness = 1,
+                    Fill = new SolidColorBrush(ColorForMetaData(meta))
+                };
+            Canvas.SetLeft(rectangle, column * rectangle.Width);
+            Canvas.SetTop(rectangle, row*rectangle.Height);
+            _canvas.Children.Add(rectangle);
+
+            var textBlock = new TextBlock
+                {
+                    Text = meta.Name,
+                    Foreground = new SolidColorBrush(Colors.Black),
+                    FontSize = rectangle.Height/2,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+            textBlock.Measure(new Size(rectangle.Width, rectangle.Height));
+            textBlock.Arrange(new Rect(new Size(rectangle.Width, rectangle.Height)));
+            Canvas.SetLeft(textBlock, (column * rectangle.Width) + ((rectangle.Width - textBlock.ActualWidth) / 2));
+            Canvas.SetTop(textBlock, (row * rectangle.Height) + ((rectangle.Height - textBlock.ActualHeight) / 2));
+            _canvas.Children.Add(textBlock);
+
+            Content = _canvas;
         }
 
-        public void DrawSegment(int column, int row)
+        private void DrawMultiSegment(int column, int row, MetaData meta)
         {
-            Rectangle r = new Rectangle();
-            r.Width = (ActualWidth - 16) / MaxColumns;
-            r.Height = (ActualHeight - 39) / MaxRows;
-            r.Stroke = new SolidColorBrush(Colors.Black);
-            r.StrokeThickness = 1;
-            r.Fill = new SolidColorBrush(Colors.LimeGreen);
-            Canvas.SetLeft(r, column * r.Width);
-            Canvas.SetTop(r, row*r.Height);
-            Canvas.Children.Add(r);
-
-            TextBlock txt = new TextBlock();
-            txt.Text = "Project";
-            txt.Foreground = new SolidColorBrush(Colors.Black);
-            txt.FontSize = r.Height / 3;
-            txt.VerticalAlignment = VerticalAlignment.Center;
-            txt.HorizontalAlignment = HorizontalAlignment.Center;
-            txt.Measure(new Size(r.Width, r.Height));
-            txt.Arrange(new Rect(new Size(r.Width, r.Height)));
-            Canvas.SetLeft(txt, (column * r.Width) + ((r.Width - txt.ActualWidth) / 2));
-            Canvas.SetTop(txt, (row * r.Height) + ((r.Height - txt.ActualHeight) / 2 ));
-            Canvas.Children.Add(txt);
-
-            Content = Canvas;
+            // Placeholder
         }
 
-        public void DrawMultiSegment(int column, int row)
+        private static Color ColorForMetaData(MetaData meta)
         {
-            
-        }
-
-        public void DrawMetaDataList(List<MetaData> meta)
-        {
-            
+            if (!meta.Activity.Equals("Sleeping"))
+            {
+                return Colors.Yellow;
+            }
+            else
+            {
+                return (meta.LastBuildStatus.Equals("Failure")) ? Colors.Red : Colors.LimeGreen;
+            }
         }
     }
 }
