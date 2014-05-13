@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Wosh.logic;
 
 namespace Wosh
@@ -15,7 +17,7 @@ namespace Wosh
         public int MaxColumns;
         public int MaxRows;
 
-        public System.Timers.Timer updateTimer;
+        public DispatcherTimer UpdateTimer;
 
         //public IXmlParser TheParser;
 
@@ -31,9 +33,10 @@ namespace Wosh
             MaxColumns = 2;
             MaxRows = 10;
 
-            updateTimer = new System.Timers.Timer(15000);
-            updateTimer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimedEvent);
-            updateTimer.Enabled = true;
+            UpdateTimer = new DispatcherTimer();
+            UpdateTimer.Tick += OnTimedEvent;
+            UpdateTimer.Interval = new TimeSpan(0, 0 , 2);
+            UpdateTimer.Start();
 
             // Dummy List
             MetaDatas = new List<MetaData>();
@@ -61,9 +64,10 @@ namespace Wosh
             }
         }
 
-        private static void OnTimedEvent(object source, System.Timers.ElapsedEventArgs e)
+        private void OnTimedEvent(object source, EventArgs eventArgs)
         {
             Console.WriteLine("Timer triggered");
+            DrawScreen(MetaDatas);
         }
 
         protected override void OnRender(DrawingContext drawingContext)
