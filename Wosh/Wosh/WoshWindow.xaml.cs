@@ -15,6 +15,8 @@ namespace Wosh
         public int MaxColumns;
         public int MaxRows;
 
+        public System.Timers.Timer updateTimer;
+
         //public IXmlParser TheParser;
 
         /// <summary>
@@ -28,6 +30,10 @@ namespace Wosh
             _canvas = new Canvas();
             MaxColumns = 2;
             MaxRows = 10;
+
+            updateTimer = new System.Timers.Timer(15000);
+            updateTimer.Elapsed += new System.Timers.ElapsedEventHandler(OnTimedEvent);
+            updateTimer.Enabled = true;
 
             // Dummy List
             MetaDatas = new List<MetaData>();
@@ -53,6 +59,11 @@ namespace Wosh
                 }
                 MetaDatas.Add(meta);
             }
+        }
+
+        private static void OnTimedEvent(object source, System.Timers.ElapsedEventArgs e)
+        {
+            Console.WriteLine("Timer triggered");
         }
 
         protected override void OnRender(DrawingContext drawingContext)
