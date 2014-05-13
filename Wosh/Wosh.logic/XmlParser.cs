@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
-using NUnit.Framework;
 
-namespace Wosh
+namespace Wosh.logic
 {
-
     /*
      * 
      * String content = new System.Net.WebClient().DownloadString(@"http://augo/go/cctray.xml");
@@ -16,10 +15,14 @@ namespace Wosh
      *      // Do Something Here
      * }
      * */
-
-    public class XmlParser
+    public interface IXmlParser
     {
-        public static List<MetaData> ParseString(String input)
+        List<MetaData> ParseString(String input);
+    }
+
+    public class XmlParser : IXmlParser
+    {
+        public List<MetaData> ParseString(String input)
         {
             XmlReader reader = XmlReader.Create(new System.IO.StringReader(input));
             List<MetaData> list = new List<MetaData>();
@@ -40,38 +43,7 @@ namespace Wosh
                 list.Add(data);
                 reader.ReadToFollowing("Project");
             }
-
             return list;
         }
     }
-
-    public class MetaData
-    {
-        public String Name;
-        public String Activity;
-        public String LastBuildStatus;
-        public String LastBuildLabel;
-        public String LastBuildTime;
-        public String WebUrl;
-
-        public MetaData()
-        {
-            Name = "(null)";
-            Activity = "(null)";
-            LastBuildLabel = "(null)";
-            LastBuildStatus = "(null)";
-            LastBuildTime = "(null)";
-            WebUrl = "(null)";
-        }
-    }
-
-    [TestFixture]
-    public class Test
-    {
-        [Test]
-        public static void tester() {
-            Console.WriteLine("Hello, World");
-        }
-    }
-
 }
