@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -18,13 +20,11 @@ namespace Wosh
         public int MaxRows;
 
         /// <summary>
-        ///  The timer that refreshes the UI
+        ///     The timer that refreshes the UI
         /// </summary>
         public DispatcherTimer UpdateTimer;
 
-        public IXmlParser TheParser;
-
-        public List<MetaData> MetaDatas;
+        public List<GroupedMetaData> GroupedMetaDatas;
 
         public WoshWindow()
         {
@@ -33,91 +33,92 @@ namespace Wosh
 
             InitializeComponent();
             _canvas = new Canvas();
-            MaxColumns = 3;
-            MaxRows = 10;
 
             // Timer
             UpdateTimer = new DispatcherTimer();
             UpdateTimer.Tick += OnTimedEvent;
-            UpdateTimer.Interval = new TimeSpan(0, 0 , 2);
+            UpdateTimer.Interval = new TimeSpan(0, 0, 15);
             UpdateTimer.Start();
 
-            // List of current MetaDatas
-            MetaDatas = new List<MetaData>();
+            // List of current GroupedMetaDatas
+            GroupedMetaDatas = XmlParser.ParseStringForGroup(new WebClient().DownloadString(@"http://augo/go/cctray.xml"));
 
-            // Dummy List
-            for (var i = 0; i < MaxColumns * MaxRows; i++)
-            {
-                var meta = new MetaData
-                {
-                    Name = "Project",
-                    Activity = "Sleeping",
-                    LastBuildStatus = "Success",
-                };
-                if (i == 1 || i == 17)
-                {
-                    meta.Activity = "Building";
-                }
-                else if (i == 5 || i == 10)
-                {
-                    meta.LastBuildStatus = "Failure";
-                }
-                MetaDatas.Add(meta);
-            }
+            CalculateMaximums();
+        }
+
+        private void CalculateMaximums()
+        {
+            MaxColumns = 2;
+            MaxRows = GroupedMetaDatas.Count/MaxColumns;
         }
 
         private void OnTimedEvent(object source, EventArgs eventArgs)
         {
-            Console.WriteLine("Timer triggered");
-            DrawScreen(MetaDatas);
+            DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(new WebClient().DownloadString(@"http://augo/go/cctray.xml")));
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            DrawScreen(MetaDatas);
+            DrawScreen(GroupedMetaDatas);
         }
 
-        private void DrawScreen(List<MetaData> metaDatas)
+        private void DrawScreen(List<GroupedMetaData> metaDatas)
         {
             var metaArray = metaDatas.ToArray();
             var counter = 0;
             for (var i = 0; i < MaxColumns; i++)
             {
+                if (i == (MaxColumns - 1))
+                {
+                    MaxRows = metaDatas.Count - counter;
+                }
                 for (var j = 0; j < MaxRows; j++)
                 {
-                    DrawSegment(i, j, (MetaData)metaArray.GetValue(counter));
+                    DrawSegment(i, j, (GroupedMetaData) metaArray.GetValue(counter));
                     counter++;
                 }
             }
+            CalculateMaximums();
+            Console.WriteLine("Finished Drawing");
         }
 
-        private void DrawSegment(int column, int row, MetaData meta)
+        private void DrawSegment(int column, int row, GroupedMetaData meta)
         {
             var rectangle = new Rectangle
-            {
-                Width = (ActualWidth - 16) / MaxColumns,
-                Height = (ActualHeight - 39) / MaxRows,
-                Stroke = new SolidColorBrush(Colors.Black),
-                StrokeThickness = 1,
-                Fill = new SolidColorBrush(ColorForMetaData(meta))
-            };
-            Canvas.SetLeft(rectangle, column * rectangle.Width);
-            Canvas.SetTop(rectangle, row * rectangle.Height);
+                {
+                    Name = "Rectangle" + column + "" + row,
+                    Width = (ActualWidth - 16) / MaxColumns,
+                    Height = (ActualHeight - 39) / MaxRows,
+                    Stroke = new SolidColorBrush(Colors.Black),
+                    StrokeThickness = 1,
+                    Fill = new SolidColorBrush(ColorForGroupedMetaData(meta))
+                };
+            Canvas.SetLeft(rectangle, column*rectangle.Width);
+            Canvas.SetTop(rectangle, row*rectangle.Height);
             _canvas.Children.Add(rectangle);
 
+            var viewBox = new Viewbox
+                {
+                    MinWidth = (rectangle.Width / 100) * 80,
+                    MaxWidth = (rectangle.Width / 100) * 80,
+                    MinHeight = (rectangle.Height / 100) * 90,
+                    MaxHeight = (rectangle.Height / 100) * 90
+                };
+            Canvas.SetLeft(viewBox, (column*rectangle.Width) + ((rectangle.Width/100)*10));
+            Canvas.SetTop(viewBox, (row*rectangle.Height));
+
             var textBlock = new TextBlock
-            {
-                Text = meta.Name,
-                Foreground = new SolidColorBrush(Colors.Black),
-                FontSize = rectangle.Height / 2,
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
+                {
+                    Text = meta.Name,
+                    Foreground = new SolidColorBrush(Colors.Black),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
             textBlock.Measure(new Size(rectangle.Width, rectangle.Height));
             textBlock.Arrange(new Rect(new Size(rectangle.Width, rectangle.Height)));
-            Canvas.SetLeft(textBlock, (column * rectangle.Width) + ((rectangle.Width - textBlock.ActualWidth) / 2));
-            Canvas.SetTop(textBlock, (row * rectangle.Height) + ((rectangle.Height - textBlock.ActualHeight) / 2));
-            _canvas.Children.Add(textBlock);
+
+            viewBox.Child = textBlock;
+            _canvas.Children.Add(viewBox);
 
             Content = _canvas;
         }
@@ -127,16 +128,33 @@ namespace Wosh
             // Placeholder
         }
 
+        // Measures text size of textblock
+        private static Size MeasureText(TextBlock tb)
+        {
+            var formattedText = new FormattedText(tb.Text, CultureInfo.CurrentUICulture,
+                                                  FlowDirection.LeftToRight,
+                                                  new Typeface(tb.FontFamily, tb.FontStyle, tb.FontWeight,
+                                                               tb.FontStretch),
+                                                  tb.FontSize, Brushes.Black);
+            return new Size(formattedText.Width, formattedText.Height);
+        }
+
         private static Color ColorForMetaData(MetaData meta)
         {
-            if (meta.Activity.Equals("Building"))
+            if (meta.Activity.Equals("Building")) return Colors.Yellow;
+            if (meta.LastBuildStatus.Equals("Success")) return Colors.LimeGreen;
+            if (meta.LastBuildStatus.Equals("Failure")) return Colors.Red;
+            return Colors.White;
+        }
+
+        private static Color ColorForGroupedMetaData(GroupedMetaData groupedMeta)
+        {
+            foreach (var meta in groupedMeta.SubData)
             {
-                return Colors.Yellow;
+                if (meta.LastBuildStatus.Equals("Failure")) return Colors.Red;
+                if (meta.Activity.Equals("Building")) return Colors.Yellow;
             }
-            else
-            {
-                return (meta.LastBuildStatus.Equals("Failure")) ? Colors.Red : Colors.LimeGreen;
-            }
+            return Colors.LimeGreen;
         }
     }
 }
