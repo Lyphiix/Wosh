@@ -20,7 +20,8 @@ namespace Wosh
     /// </summary>
     public partial class WoshWindow : Window
     {
-        public Canvas Canvas;
+        private Canvas Canvas;
+        
 
         public int MaxColumns;
         public int MaxRows;
@@ -30,6 +31,23 @@ namespace Wosh
             Canvas = new Canvas();
             MaxColumns = 2;
             MaxRows = 10;
+        }
+
+        private void DrawScreen(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < MaxColumns; i++)
+            {
+                for (int j = 0; j < MaxRows; j++)
+                {
+                    DrawSegment(i, j);
+                }
+            }
+        }
+
+        private void RedrawScreen(object sender, SizeChangedEventArgs e)
+        {
+            Canvas = new Canvas();
+            DrawScreen(sender, e);
         }
 
         public void DrawSegment(int column, int row)
@@ -50,28 +68,23 @@ namespace Wosh
             txt.FontSize = r.Height / 3;
             txt.VerticalAlignment = VerticalAlignment.Center;
             txt.HorizontalAlignment = HorizontalAlignment.Center;
-            Canvas.SetLeft(txt, (column * r.Width) + ((r.Width - txt.RenderSize.Width) / 2));
-            Canvas.SetTop(txt, (row * r.Height) + (r.Height / 3));
+            txt.Measure(new Size(r.Width, r.Height));
+            txt.Arrange(new Rect(new Size(r.Width, r.Height)));
+            Canvas.SetLeft(txt, (column * r.Width) + ((r.Width - txt.ActualWidth) / 2));
+            Canvas.SetTop(txt, (row * r.Height) + ((r.Height - txt.ActualHeight) / 2 ));
             Canvas.Children.Add(txt);
 
             Content = Canvas;
         }
 
-        private void DrawScreen(object sender, RoutedEventArgs e)
+        public void DrawMultiSegment(int column, int row)
         {
-            for (int i = 0; i < MaxColumns; i++)
-            {
-                for (int j = 0; j < MaxRows; j++)
-                {
-                    DrawSegment(i, j);
-                }
-            }
+            
         }
 
-        private void RedrawScreen(object sender, SizeChangedEventArgs e)
+        public void DrawMetaDataList(List<MetaData> meta)
         {
-            Canvas = new Canvas();
-            DrawScreen(sender, e);
+            
         }
     }
 }
