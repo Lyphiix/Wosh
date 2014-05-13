@@ -3,5 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Wosh"
         WindowState="Maximized"
+        MinWidth="500"
+        MinHeight="250"
         WindowStartupLocation="CenterScreen">
 </Window>

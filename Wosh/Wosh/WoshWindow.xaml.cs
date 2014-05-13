@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -14,43 +13,46 @@ namespace Wosh
     {
         private readonly Canvas _canvas;
 
+        // Properties for determining what the UI looks like
         public int MaxColumns;
         public int MaxRows;
 
+        /// <summary>
+        ///  The timer that refreshes the UI
+        /// </summary>
         public DispatcherTimer UpdateTimer;
 
-        //public IXmlParser TheParser;
+        public IXmlParser TheParser;
 
-        /// <summary>
-        /// Dummy list - Will be removed
-        /// </summary>
         public List<MetaData> MetaDatas;
 
         public WoshWindow()
         {
+            Width = SystemParameters.PrimaryScreenWidth;
+            Height = SystemParameters.PrimaryScreenHeight;
+
             InitializeComponent();
             _canvas = new Canvas();
-            MaxColumns = 2;
+            MaxColumns = 3;
             MaxRows = 10;
 
+            // Timer
             UpdateTimer = new DispatcherTimer();
             UpdateTimer.Tick += OnTimedEvent;
             UpdateTimer.Interval = new TimeSpan(0, 0 , 2);
             UpdateTimer.Start();
 
-            // Dummy List
+            // List of current MetaDatas
             MetaDatas = new List<MetaData>();
 
-            for (var i = 0; i < 20; i++)
+            // Dummy List
+            for (var i = 0; i < MaxColumns * MaxRows; i++)
             {
                 var meta = new MetaData
                 {
                     Name = "Project",
                     Activity = "Sleeping",
-                    LastBuildLabel = "(null)",
                     LastBuildStatus = "Success",
-                    LastBuildTime = "(null)",
-                    WebUrl = "http://www.this-is-stupid.com"
                 };
                 if (i == 1 || i == 17)
                 {
