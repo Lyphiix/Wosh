@@ -40,9 +40,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WoshController.cs" />
     <Compile Include="MetaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XmlParser.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Wosh\Wosh.csproj">
+      <Project>{7285bdcb-913d-4c02-9610-6437d895964a}</Project>
+      <Name>Wosh</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

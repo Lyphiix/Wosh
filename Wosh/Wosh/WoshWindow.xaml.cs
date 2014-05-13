@@ -22,6 +22,8 @@ namespace Wosh
             _canvas = new Canvas();
             MaxColumns = 2;
             MaxRows = 10;
+            // Content Manger.
+            // mager(this);
         }
 
         protected override void OnRender(DrawingContext drawingContext)

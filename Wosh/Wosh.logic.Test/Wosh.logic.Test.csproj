@@ -47,6 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="WoshControllerTestFixture.cs" />
     <Compile Include="XmlParserTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -57,6 +58,10 @@
     <ProjectReference Include="..\Wosh.logic\Wosh.logic.csproj">
       <Project>{66a00a50-67c1-4d4e-99d7-a38ec31380b5}</Project>
       <Name>Wosh.logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Wosh\Wosh.csproj">
+      <Project>{7285bdcb-913d-4c02-9610-6437d895964a}</Project>
+      <Name>Wosh</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
