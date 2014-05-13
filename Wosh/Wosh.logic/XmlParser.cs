@@ -15,14 +15,9 @@ namespace Wosh.logic
      *      // Do Something Here
      * }
      * */
-    public interface IXmlParser
+    public class XmlParser
     {
-        List<MetaData> ParseString(String input);
-    }
-
-    public class XmlParser : IXmlParser
-    {
-        public List<MetaData> ParseString(String input)
+        static public List<MetaData> ParseString(String input)
         {
             XmlReader reader = XmlReader.Create(new System.IO.StringReader(input));
             List<MetaData> list = new List<MetaData>();
@@ -44,6 +39,36 @@ namespace Wosh.logic
                 reader.ReadToFollowing("Project");
             }
             return list;
+        }
+
+        static public List<GroupedMetaData> ParseStringForGroup(String input)
+        {
+
+            List<MetaData> data = ParseString(input);
+
+            Dictionary<String, GroupedMetaData> groupData = new Dictionary<String, GroupedMetaData>();
+
+            foreach (MetaData d in data)
+            {
+                Char[] x = { ':', ':' };
+                String[] v = d.Name.Split(x, StringSplitOptions.RemoveEmptyEntries);
+                GroupedMetaData value;
+                var v0 = v[0].Trim();
+                if (groupData.TryGetValue(v0, out value)) { }
+                else
+                {
+                    // No grouped data, must create our own.
+                    value = new GroupedMetaData();
+                    value.Name = v0;
+                    value.SubData = new List<MetaData>();
+                    groupData.Add(v0, value);
+                }
+                d.Stage = v.Length >= 2 ? v[1].Trim() : String.Empty;
+                d.Job = v.Length >= 3 ? v[2].Trim() : String.Empty;
+                value.SubData.Add(d);
+            }
+
+            return groupData.Values.ToList();
         }
     }
 }
