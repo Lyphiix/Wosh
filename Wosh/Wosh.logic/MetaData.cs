@@ -8,6 +8,7 @@ namespace Wosh.logic
     {
         public String Name;
         // Used for grouping.
+        public String GroupName;
         public String Stage;
         public String Job;
         // --

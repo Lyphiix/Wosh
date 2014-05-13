@@ -17,6 +17,11 @@ namespace Wosh.logic
      * */
     public class XmlParser
     {
+        // A list of the projects names to be excluded from display.
+        public static List<String> ExcludedGroupProjects = new List<string>();
+        public static List<String> ExcludedIndividualProjects = new List<string>();
+        public static bool ShouldExcludeProjects;
+
         static public List<MetaData> ParseString(String input)
         {
             XmlReader reader = XmlReader.Create(new System.IO.StringReader(input));
@@ -35,6 +40,12 @@ namespace Wosh.logic
                 if (reader.MoveToAttribute("lastBuildTime")) data.LastBuildTime = reader.Value;
                 if (reader.MoveToAttribute("webUrl")) data.WebUrl = reader.Value;
 
+                // Set the group name, the stage, and the job.
+                String[] splitName = data.Name.Split(new[] {":", ":"}, StringSplitOptions.RemoveEmptyEntries);
+                data.GroupName = splitName[0].Trim();
+                data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
+                data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
+
                 list.Add(data);
                 reader.ReadToFollowing("Project");
             }
@@ -43,29 +54,38 @@ namespace Wosh.logic
 
         static public List<GroupedMetaData> ParseStringForGroup(String input)
         {
-
-            List<MetaData> data = ParseString(input);
-
+            // Obtain the list of meta data from the other class method.
+            List<MetaData> metaData = ParseString(input);
+            // Create a dictornary to store the grouped data in.
             Dictionary<String, GroupedMetaData> groupData = new Dictionary<String, GroupedMetaData>();
-
-            foreach (MetaData d in data)
+            /*
+             * Loop throuh all the metadata.
+             * 
+             * If there is a group with the same "prefix" (E.g "Support :: Build", prefix is "Support")
+             *      Add it the the group.
+             * If there isn't, create a new grouped metadata object to store it in.
+             * 
+             * If the group name (the prefix) is in the excluded group projects class varable, we won't add it to the dictonary.
+             */
+            foreach (MetaData data in metaData)
             {
                 Char[] x = { ':', ':' };
-                String[] v = d.Name.Split(x, StringSplitOptions.RemoveEmptyEntries);
+                String[] splitName = data.Name.Split(x, StringSplitOptions.RemoveEmptyEntries);
                 GroupedMetaData value;
-                var v0 = v[0].Trim();
-                if (groupData.TryGetValue(v0, out value)) { }
-                else
-                {
+                String groupName = data.GroupName;
+                // Pass, because we don't want to add this data to the output.
+                if (ExcludedGroupProjects.Contains(groupName)) continue;
+
+                // Look for the group, if it isn't there, create it.
+                if (!groupData.TryGetValue(groupName, out value)) {
                     // No grouped data, must create our own.
                     value = new GroupedMetaData();
-                    value.Name = v0;
+                    value.Name = groupName;
                     value.SubData = new List<MetaData>();
-                    groupData.Add(v0, value);
+                    groupData.Add(groupName, value);
                 }
-                d.Stage = v.Length >= 2 ? v[1].Trim() : String.Empty;
-                d.Job = v.Length >= 3 ? v[2].Trim() : String.Empty;
-                value.SubData.Add(d);
+                // Add the metadata to the group data's subdata.
+                value.SubData.Add(data);
             }
 
             return groupData.Values.ToList();
