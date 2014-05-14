@@ -46,7 +46,7 @@ namespace Wosh.logic
                 data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
                 data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
                 // If the project name is in the excluded indiviual projects, don't add it to the ouput list.
-                if (!ExcludedIndividualProjects.Contains(data.Name) list.Add(data);
+                if (!ExcludedIndividualProjects.Contains(data.Name)) list.Add(data);
                 reader.ReadToFollowing("Project");
             }
             return list;
