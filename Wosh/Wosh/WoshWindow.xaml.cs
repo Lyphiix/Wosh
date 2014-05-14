@@ -34,6 +34,11 @@ namespace Wosh
         public DispatcherTimer UpdateTimer;
 
         /// <summary>
+        /// The instance of the XmlParser
+        /// </summary>
+        public XmlParser XmlParser;
+
+        /// <summary>
         /// Retains parsed MetaDatas for drawing when the window is resized
         /// </summary>
         public List<Pipeline> GroupedMetaDatas;
@@ -51,6 +56,8 @@ namespace Wosh
             UpdateTimer.Interval = new TimeSpan(0, 0, 2); // Sets the timer's interval to 15 seconds
             // TODO - Make the interval get retrieved from config
             UpdateTimer.Start();
+
+            XmlParser = new XmlParser();
 
             // List of current GroupedMetaDatas
             using (var webClient = new WebClient())
