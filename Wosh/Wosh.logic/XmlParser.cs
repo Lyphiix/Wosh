@@ -23,9 +23,9 @@ namespace Wosh.logic
         // If true, parser will exclude group projects and individual projects from the output list
         public static bool ShouldExcludeProjects;
 
+        public static int DaysToExpirary = 30;
         // If true, parser will exclude individual projects which are older than x days.
         public static bool ShouldRemoveAfterExpirary;
-
 
         static public List<MetaData> ParseString(String input)
         {
@@ -53,16 +53,30 @@ namespace Wosh.logic
                 // If the project name is in the excluded indiviual projects, don't add it to the ouput list.
                 if (ShouldExcludeProjects)
                 {
-                    if (!ExcludedIndividualProjects.Contains(data.Name)) list.Add(data);
+                    if (ExcludedIndividualProjects.Contains(data.Name)) continue;
                 }
                 else
                 {
                     list.Add(data);
                 }
-                
                 // If the project is out of data, exclud it from the output list.
+                
+                if (ShouldRemoveAfterExpirary)
+                {
+                    // Time format, (YEAR)-(MONTH)-(DAY)T(HOUR):(MINUTE):(SECOND)
+                    DateTime now = DateTime.Now;
 
+                    string[] time = data.LastBuildTime.Split(new[] {'-', 'T', ':'}, StringSplitOptions.RemoveEmptyEntries);
 
+                    DateTime then = new DateTime(Int32.Parse(time[0]), Int32.Parse(time[1]), Int32.Parse(time[2]), Int32.Parse(time[3]), Int32.Parse(time[4]), Int32.Parse(time[5]));
+                    TimeSpan difference = now - then;
+                    if (difference.TotalDays >= DaysToExpirary)
+                    {
+                        continue;
+                    }
+                }
+                
+                list.Add(data);
                 reader.ReadToFollowing("Project");
             }
             return list;
