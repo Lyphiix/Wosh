@@ -13,7 +13,7 @@ namespace Wosh
 {
     public partial class WoshWindow : Window
     {
-        private readonly Canvas _canvas;
+        private Canvas _canvas;
 
         // Properties for determining what the UI looks like
         public int MaxColumns;
@@ -32,7 +32,6 @@ namespace Wosh
             Height = SystemParameters.PrimaryScreenHeight;
 
             InitializeComponent();
-            _canvas = new Canvas();
 
             // Timer
             UpdateTimer = new DispatcherTimer();
@@ -59,6 +58,7 @@ namespace Wosh
 
         protected override void OnRender(DrawingContext drawingContext)
         {
+            _canvas = new Canvas();
             DrawScreen(GroupedMetaDatas);
         }
 
@@ -79,7 +79,6 @@ namespace Wosh
                 }
             }
             CalculateMaximums();
-            Console.WriteLine("Finished Drawing");
         }
 
         private void DrawSegment(int column, int row, GroupedMetaData meta)
@@ -126,17 +125,6 @@ namespace Wosh
         private void DrawMultiSegment(int column, int row, MetaData meta)
         {
             // Placeholder
-        }
-
-        // Measures text size of textblock
-        private static Size MeasureText(TextBlock tb)
-        {
-            var formattedText = new FormattedText(tb.Text, CultureInfo.CurrentUICulture,
-                                                  FlowDirection.LeftToRight,
-                                                  new Typeface(tb.FontFamily, tb.FontStyle, tb.FontWeight,
-                                                               tb.FontStretch),
-                                                  tb.FontSize, Brushes.Black);
-            return new Size(formattedText.Width, formattedText.Height);
         }
 
         public Color ColorForMetaData(MetaData meta)
