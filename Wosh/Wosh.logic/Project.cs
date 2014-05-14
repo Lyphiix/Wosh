@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace Wosh.logic
 {
-    public class MetaData
+    public class Project
     {
         public String Name;
         // Used for grouping.
@@ -18,9 +18,9 @@ namespace Wosh.logic
         public String LastBuildTime;
         public String WebUrl;
     }
-    public class GroupedMetaData
+    public class Pipeline
     {
         public String Name;
-        public List<MetaData> SubData;
+        public List<Project> SubData;
     }
 }

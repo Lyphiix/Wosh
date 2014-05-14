@@ -31,8 +31,8 @@ namespace Wosh.logic.Test
 <Project name='SupporterTransactionSystem :: PublishNugetPackages' activity='Sleeping' lastBuildStatus='Success' lastBuildLabel='1.0.0.1500' lastBuildTime='2014-04-24T17:11:24' webUrl='http://go/go/pipelines/SupporterTransactionSystem/1500/PublishNugetPackages/1'/>
 </Projects>";
 
-            List<MetaData> data = XmlParser.ParseString(content);
-            foreach (MetaData d in data)
+            List<Project> data = XmlParser.ParseString(content);
+            foreach (Project d in data)
             {
                 Assert.That(d.Name, Is.Not.Null);
             }
