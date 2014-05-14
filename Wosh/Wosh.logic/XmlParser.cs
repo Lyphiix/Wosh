@@ -45,8 +45,8 @@ namespace Wosh.logic
                 data.GroupName = splitName[0].Trim();
                 data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
                 data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
-
-                list.Add(data);
+                // If the project name is in the excluded indiviual projects, don't add it to the ouput list.
+                if (!ExcludedIndividualProjects.Contains(data.Name) list.Add(data);
                 reader.ReadToFollowing("Project");
             }
             return list;
@@ -69,8 +69,6 @@ namespace Wosh.logic
              */
             foreach (MetaData data in metaData)
             {
-                Char[] x = { ':', ':' };
-                String[] splitName = data.Name.Split(x, StringSplitOptions.RemoveEmptyEntries);
                 GroupedMetaData value;
                 String groupName = data.GroupName;
                 // Pass, because we don't want to add this data to the output.
