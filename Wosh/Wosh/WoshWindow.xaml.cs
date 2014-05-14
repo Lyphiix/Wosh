@@ -78,7 +78,6 @@ namespace Wosh
         // Called by timer - Redraws the screen
         private void OnTimedEvent(object source, EventArgs eventArgs)
         {
-            _canvas.Children.Clear();
             using (var webClient = new WebClient())
             {
                 DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml")));
@@ -93,6 +92,7 @@ namespace Wosh
         // Draws the display on the window
         private void DrawScreen(List<Pipeline> metaDatas)
         {
+            _canvas.Children.Clear();
             CalculateMaximums();
             var metaArray = metaDatas.ToArray();
             var counter = 0;
@@ -177,6 +177,11 @@ namespace Wosh
                 if (project.Activity.Equals("Building")) return Colors.Yellow;
             }
             return Colors.LimeGreen;
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            UpdateTimer.Stop();
         }
     }
 }
