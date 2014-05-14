@@ -22,5 +22,23 @@ namespace Wosh.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://augo/go/cctray.xml")]
+        public string URLToParse {
+            get {
+                return ((string)(this["URLToParse"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int PollSpeed {
+            get {
+                return ((int)(this["PollSpeed"]));
+            }
+        }
     }
 }

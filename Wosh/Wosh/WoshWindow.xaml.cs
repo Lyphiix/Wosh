@@ -5,9 +5,11 @@ using System.Media;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Wosh.Properties;
 using Wosh.logic;
 
 namespace Wosh
@@ -17,7 +19,7 @@ namespace Wosh
         /// <summary>
         /// Drawing canvas
         /// </summary>
-        private Canvas _canvas;
+        private readonly Canvas _canvas;
 
         /// <summary>
         /// The number of columns to draw - Set in configuration
@@ -43,6 +45,11 @@ namespace Wosh
         /// </summary>
         public List<Pipeline> GroupedMetaDatas;
 
+        /// <summary>
+        /// The Config (Preferences) window instance
+        /// </summary>
+        public WoshConfigurationWindow ConfigurationWindow;
+
         public WoshWindow()
         {
             Width = SystemParameters.PrimaryScreenWidth;
@@ -53,7 +60,7 @@ namespace Wosh
             // Timer set up
             UpdateTimer = new DispatcherTimer();
             UpdateTimer.Tick += OnTimedEvent;
-            UpdateTimer.Interval = new TimeSpan(0, 0, 2); // Sets the timer's interval to 15 seconds
+            UpdateTimer.Interval = new TimeSpan(0, 0, 5); // Sets the timer's interval to 15 seconds
             // TODO - Make the interval get retrieved from config
             UpdateTimer.Start();
 
@@ -62,7 +69,14 @@ namespace Wosh
             // List of current GroupedMetaDatas
             using (var webClient = new WebClient())
             {
-                GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml"));
+                try
+                {
+                    GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(Settings.Default.URLToParse));
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Failed to download string - please check that the correct URL is set", "Invalid URL");
+                }
             }
 
             _canvas = new Canvas();
@@ -80,7 +94,15 @@ namespace Wosh
         {
             using (var webClient = new WebClient())
             {
-                DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml")));
+                try
+                {
+                    DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml")));
+                }
+                catch (Exception)
+                {
+                    DrawScreen(GroupedMetaDatas);
+                    Console.WriteLine("Failed to download string from URL");
+                }
             }
         }
 
@@ -177,6 +199,14 @@ namespace Wosh
                 if (project.Activity.Equals("Building")) return Colors.Yellow;
             }
             return Colors.LimeGreen;
+        }
+
+        private void KeyPressed(object sender, KeyEventArgs e)
+        {
+           if ((e.Key == Key.F2))
+           {
+               ConfigurationWindow.Show();
+           }
         }
 
         protected override void OnClosed(EventArgs e)
