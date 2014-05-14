@@ -10,8 +10,8 @@ namespace Wosh.logic
     /*
      * 
      * String content = new System.Net.WebClient().DownloadString(@"http://augo/go/cctray.xml");
-     * List<MetaData> data = XmlParser.ParseString(content);
-     * foreach (MetaData d in data) {
+     * List<Project> data = XmlParser.ParseString(content);
+     * foreach (Project d in data) {
      *      // Do Something Here
      * }
      * */
@@ -27,16 +27,21 @@ namespace Wosh.logic
         // If true, parser will exclude individual projects which are older than x days.
         public static bool ShouldRemoveAfterExpirary;
 
+<<<<<<< HEAD
         static public List<MetaData> ParseString(String input)
+=======
+
+        static public List<Project> ParseString(String input)
+>>>>>>> 187fe870761bf383e335bbbf536d043da3d5c031
         {
             XmlReader reader = XmlReader.Create(new System.IO.StringReader(input));
-            List<MetaData> list = new List<MetaData>();
+            List<Project> list = new List<Project>();
 
             reader.ReadToFollowing("Project");
 
             while (!reader.EOF)
             {
-                MetaData data = new MetaData();
+                Project data = new Project();
 
                 if (reader.MoveToAttribute("name")) data.Name = reader.Value;
                 if (reader.MoveToAttribute("activity")) data.Activity = reader.Value;
@@ -82,12 +87,12 @@ namespace Wosh.logic
             return list;
         }
 
-        static public List<GroupedMetaData> ParseStringForGroup(String input)
+        static public List<Pipeline> ParseStringForGroup(String input)
         {
             // Obtain the list of meta data from the other class method.
-            List<MetaData> metaData = ParseString(input);
+            List<Project> metaData = ParseString(input);
             // Create a dictornary to store the grouped data in.
-            Dictionary<String, GroupedMetaData> groupData = new Dictionary<String, GroupedMetaData>();
+            Dictionary<String, Pipeline> groupData = new Dictionary<String, Pipeline>();
             /*
              * Loop throuh all the metadata.
              * 
@@ -97,9 +102,9 @@ namespace Wosh.logic
              * 
              * If the group name (the prefix) is in the excluded group projects class varable, we won't add it to the dictonary.
              */
-            foreach (MetaData data in metaData)
+            foreach (Project data in metaData)
             {
-                GroupedMetaData value;
+                Pipeline value;
                 String groupName = data.GroupName;
                 // Pass, because we don't want to add this data to the output.
                 if (ShouldExcludeProjects)
@@ -109,9 +114,9 @@ namespace Wosh.logic
                 // Look for the group, if it isn't there, create it.
                 if (!groupData.TryGetValue(groupName, out value)) {
                     // No grouped data, must create our own.
-                    value = new GroupedMetaData();
+                    value = new Pipeline();
                     value.Name = groupName;
-                    value.SubData = new List<MetaData>();
+                    value.SubData = new List<Project>();
                     groupData.Add(groupName, value);
                 }
                 // Add the metadata to the group data's subdata.
