@@ -13,18 +13,29 @@ namespace Wosh
 {
     public partial class WoshWindow : Window
     {
+        /// <summary>
+        /// Drawing canvas
+        /// </summary>
         private Canvas _canvas;
 
-        // Properties for determining what the UI looks like
-        public int MaxColumns;
-        public int MaxRows;
+        /// <summary>
+        /// The number of columns to draw - Set in configuration
+        /// </summary>
+        public int Columns;
+        /// <summary>
+        /// The number of rows to draw - Calculated using Columns and the number of MetaDatas
+        /// </summary>
+        public int Rows;
 
         /// <summary>
-        ///     The timer that refreshes the UI
+        /// The timer that refreshes the UI
         /// </summary>
         public DispatcherTimer UpdateTimer;
 
-        public List<GroupedMetaData> GroupedMetaDatas;
+        /// <summary>
+        /// Retains parsed MetaDatas for drawing when the window is resized
+        /// </summary>
+        public List<Pipeline> GroupedMetaDatas;
 
         public WoshWindow()
         {
@@ -33,10 +44,11 @@ namespace Wosh
 
             InitializeComponent();
 
-            // Timer
+            // Timer set up
             UpdateTimer = new DispatcherTimer();
             UpdateTimer.Tick += OnTimedEvent;
-            UpdateTimer.Interval = new TimeSpan(0, 0, 15);
+            UpdateTimer.Interval = new TimeSpan(0, 0, 15); // Sets the timer's interval to 15 seconds
+            // TODO - Make the interval get retrieved from config
             UpdateTimer.Start();
 
             // List of current GroupedMetaDatas
@@ -45,12 +57,14 @@ namespace Wosh
             CalculateMaximums();
         }
 
+        // Calculates the maximums for Columns and Rows - Columns is retrieved from config and Rows is calculated
         private void CalculateMaximums()
         {
-            MaxColumns = 2;
-            MaxRows = GroupedMetaDatas.Count/MaxColumns;
+            Columns = 2; // TODO - Retrieve from config
+            Rows = GroupedMetaDatas.Count/Columns;
         }
 
+        // Called by timer - Redraws the screen
         private void OnTimedEvent(object source, EventArgs eventArgs)
         {
             DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(new WebClient().DownloadString(@"http://augo/go/cctray.xml")));
@@ -62,41 +76,51 @@ namespace Wosh
             DrawScreen(GroupedMetaDatas);
         }
 
-        private void DrawScreen(List<GroupedMetaData> metaDatas)
+        // Draws the display on the window
+        private void DrawScreen(List<Pipeline> metaDatas)
         {
             var metaArray = metaDatas.ToArray();
             var counter = 0;
-            for (var i = 0; i < MaxColumns; i++)
+            for (var i = 0; i < Columns; i++)
             {
-                if (i == (MaxColumns - 1))
+                if ((Columns != 1) && (i == (Columns - 1)))
                 {
-                    MaxRows = metaDatas.Count - counter;
+                    Rows = metaDatas.Count - counter;
                 }
-                for (var j = 0; j < MaxRows; j++)
+                for (var j = 0; j < Rows; j++)
                 {
-                    DrawSegment(i, j, (GroupedMetaData) metaArray.GetValue(counter));
+                    try
+                    {
+                        DrawPipelineSegment(i, j, (Pipeline)metaArray.GetValue(counter));
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("There are more rows than needed");
+                    }
                     counter++;
                 }
             }
+            Content = _canvas; // Add this segment to the screens content
             CalculateMaximums();
         }
 
-        private void DrawSegment(int column, int row, GroupedMetaData meta)
+        // Draws a single segment
+        private void DrawPipelineSegment(int column, int row, Pipeline pipeline)
         {
-            var rectangle = new Rectangle
+            var rectangle = new Rectangle // The background rectangle
                 {
                     Name = "Rectangle" + column + "" + row,
-                    Width = (ActualWidth - 16) / MaxColumns,
-                    Height = (ActualHeight - 39) / MaxRows,
+                    Width = (ActualWidth - 16) / Columns,
+                    Height = (ActualHeight - 39) / Rows,
                     Stroke = new SolidColorBrush(Colors.Black),
                     StrokeThickness = 1,
-                    Fill = new SolidColorBrush(ColorForGroupedMetaData(meta))
+                    Fill = new SolidColorBrush(ColorForPipeline(pipeline))
                 };
             Canvas.SetLeft(rectangle, column*rectangle.Width);
             Canvas.SetTop(rectangle, row*rectangle.Height);
             _canvas.Children.Add(rectangle);
 
-            var viewBox = new Viewbox
+            var viewBox = new Viewbox // Scales the containing elements
                 {
                     MinWidth = (rectangle.Width / 100) * 80,
                     MaxWidth = (rectangle.Width / 100) * 80,
@@ -106,9 +130,9 @@ namespace Wosh
             Canvas.SetLeft(viewBox, (column*rectangle.Width) + ((rectangle.Width/100)*10));
             Canvas.SetTop(viewBox, (row*rectangle.Height));
 
-            var textBlock = new TextBlock
+            var textBlock = new TextBlock // Contains the name of the Pipeline to display
                 {
-                    Text = meta.Name,
+                    Text = pipeline.Name,
                     Foreground = new SolidColorBrush(Colors.Black),
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center
@@ -118,29 +142,22 @@ namespace Wosh
 
             viewBox.Child = textBlock;
             _canvas.Children.Add(viewBox);
-
-            Content = _canvas;
         }
 
-        private void DrawMultiSegment(int column, int row, MetaData meta)
+        // Returns the color of 
+        public Color ColorForProject(Project project)
         {
-            // Placeholder
+            if (project.Activity.Equals("Building")) return Colors.Yellow;
+            if (project.LastBuildStatus.Equals("Success")) return Colors.LimeGreen;
+            return (project.LastBuildStatus.Equals("Failure")) ? Colors.Red : Colors.White;
         }
 
-        public Color ColorForMetaData(MetaData meta)
+        public Color ColorForPipeline(Pipeline pipeline)
         {
-            if (meta.Activity.Equals("Building")) return Colors.Yellow;
-            if (meta.LastBuildStatus.Equals("Success")) return Colors.LimeGreen;
-            if (meta.LastBuildStatus.Equals("Failure")) return Colors.Red;
-            return Colors.White;
-        }
-
-        public Color ColorForGroupedMetaData(GroupedMetaData groupMeta)
-        {
-            foreach (var meta in groupMeta.SubData)
+            foreach (var project in pipeline.SubData)
             {
-                if (meta.LastBuildStatus.Equals("Failure")) return Colors.Red;
-                if (meta.Activity.Equals("Building")) return Colors.Yellow;
+                if (project.LastBuildStatus.Equals("Failure")) return Colors.Red;
+                if (project.Activity.Equals("Building")) return Colors.Yellow;
             }
             return Colors.LimeGreen;
         }
