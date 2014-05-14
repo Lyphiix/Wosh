@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,57 +30,62 @@ namespace Wosh.logic
 
         static public List<Project> ParseString(String input)
         {
-            XmlReader reader = XmlReader.Create(new System.IO.StringReader(input));
-            List<Project> list = new List<Project>();
-
-            while (true)
+            using (var stringReader = new StringReader(input))
+            using (var reader = XmlReader.Create(stringReader))
             {
-                reader.ReadToFollowing("Project");
-                if (reader.EOF) break;
+                List<Project> list = new List<Project>();
 
-                Project data = new Project();
-
-                if (reader.MoveToAttribute("name")) data.Name = reader.Value;
-                if (reader.MoveToAttribute("activity")) data.Activity = reader.Value;
-                if (reader.MoveToAttribute("lastBuildStatus")) data.LastBuildStatus = reader.Value;
-                if (reader.MoveToAttribute("lastBuildLabel")) data.LastBuildLabel = reader.Value;
-                if (reader.MoveToAttribute("lastBuildTime")) data.LastBuildTime = reader.Value;
-                if (reader.MoveToAttribute("webUrl")) data.WebUrl = reader.Value;
-
-                // Set the group name, the stage, and the job.
-                String[] splitName = data.Name.Split(new[] {":", ":"}, StringSplitOptions.RemoveEmptyEntries);
-                data.GroupName = splitName[0].Trim();
-                data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
-                data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
-                // If the project name is in the excluded indiviual projects, don't add it to the ouput list.
-                if (ShouldExcludeProjects)
+                while (true)
                 {
-                    if (ExcludedIndividualProjects.Contains(data.Name)) continue;
-                }
-                else
-                {
+                    reader.ReadToFollowing("Project");
+                    if (reader.EOF) break;
+
+                    Project data = new Project();
+
+                    if (reader.MoveToAttribute("name")) data.Name = reader.Value;
+                    if (reader.MoveToAttribute("activity")) data.Activity = reader.Value;
+                    if (reader.MoveToAttribute("lastBuildStatus")) data.LastBuildStatus = reader.Value;
+                    if (reader.MoveToAttribute("lastBuildLabel")) data.LastBuildLabel = reader.Value;
+                    if (reader.MoveToAttribute("lastBuildTime")) data.LastBuildTime = reader.Value;
+                    if (reader.MoveToAttribute("webUrl")) data.WebUrl = reader.Value;
+
+                    // Set the group name, the stage, and the job.
+                    String[] splitName = data.Name.Split(new[] {":", ":"}, StringSplitOptions.RemoveEmptyEntries);
+                    data.GroupName = splitName[0].Trim();
+                    data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
+                    data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
+                    // If the project name is in the excluded indiviual projects, don't add it to the ouput list.
+                    if (ShouldExcludeProjects)
+                    {
+                        if (ExcludedIndividualProjects.Contains(data.Name)) continue;
+                    }
+                    else
+                    {
+                        list.Add(data);
+                    }
+                    // If the project is out of data, exclud it from the output list.
+
+                    if (ShouldRemoveAfterExpirary)
+                    {
+                        // Time format, (YEAR)-(MONTH)-(DAY)T(HOUR):(MINUTE):(SECOND)
+                        DateTime now = DateTime.Now;
+
+                        string[] time = data.LastBuildTime.Split(new[] {'-', 'T', ':'},
+                                                                 StringSplitOptions.RemoveEmptyEntries);
+
+                        DateTime then = new DateTime(Int32.Parse(time[0]), Int32.Parse(time[1]), Int32.Parse(time[2]),
+                                                     Int32.Parse(time[3]), Int32.Parse(time[4]), Int32.Parse(time[5]));
+                        TimeSpan difference = now - then;
+                        if (difference.TotalDays >= DaysToExpirary)
+                        {
+                            continue;
+                        }
+                    }
+
                     list.Add(data);
                 }
-                // If the project is out of data, exclud it from the output list.
-                
-                if (ShouldRemoveAfterExpirary)
-                {
-                    // Time format, (YEAR)-(MONTH)-(DAY)T(HOUR):(MINUTE):(SECOND)
-                    DateTime now = DateTime.Now;
-
-                    string[] time = data.LastBuildTime.Split(new[] {'-', 'T', ':'}, StringSplitOptions.RemoveEmptyEntries);
-
-                    DateTime then = new DateTime(Int32.Parse(time[0]), Int32.Parse(time[1]), Int32.Parse(time[2]), Int32.Parse(time[3]), Int32.Parse(time[4]), Int32.Parse(time[5]));
-                    TimeSpan difference = now - then;
-                    if (difference.TotalDays >= DaysToExpirary)
-                    {
-                        continue;
-                    }
-                }
-                
-                list.Add(data);
+                return list;
             }
-            return list;
         }
 
         static public List<Pipeline> ParseStringForGroup(String input)

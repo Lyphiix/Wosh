@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Media;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -47,38 +48,44 @@ namespace Wosh
             // Timer set up
             UpdateTimer = new DispatcherTimer();
             UpdateTimer.Tick += OnTimedEvent;
-            UpdateTimer.Interval = new TimeSpan(0, 0, 15); // Sets the timer's interval to 15 seconds
+            UpdateTimer.Interval = new TimeSpan(0, 0, 2); // Sets the timer's interval to 15 seconds
             // TODO - Make the interval get retrieved from config
             UpdateTimer.Start();
 
             // List of current GroupedMetaDatas
-            GroupedMetaDatas = XmlParser.ParseStringForGroup(new WebClient().DownloadString(@"http://augo/go/cctray.xml"));
+            using (var webClient = new WebClient())
+            {
+                GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml"));
+            }
 
-            CalculateMaximums();
+            _canvas = new Canvas();
         }
 
         // Calculates the maximums for Columns and Rows - Columns is retrieved from config and Rows is calculated
         private void CalculateMaximums()
         {
-            Columns = 2; // TODO - Retrieve from config
+            Columns = 3; // TODO - Retrieve from config
             Rows = GroupedMetaDatas.Count/Columns;
         }
 
         // Called by timer - Redraws the screen
         private void OnTimedEvent(object source, EventArgs eventArgs)
         {
-            DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(new WebClient().DownloadString(@"http://augo/go/cctray.xml")));
+            using (var webClient = new WebClient())
+            {
+                DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml")));
+            }
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            _canvas = new Canvas();
             DrawScreen(GroupedMetaDatas);
         }
 
         // Draws the display on the window
         private void DrawScreen(List<Pipeline> metaDatas)
         {
+            CalculateMaximums();
             var metaArray = metaDatas.ToArray();
             var counter = 0;
             for (var i = 0; i < Columns; i++)
@@ -101,7 +108,7 @@ namespace Wosh
                 }
             }
             Content = _canvas; // Add this segment to the screens content
-            CalculateMaximums();
+            GC.Collect();
         }
 
         // Draws a single segment
