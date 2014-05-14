@@ -20,7 +20,12 @@ namespace Wosh.logic
         // A list of the projects names to be excluded from display.
         public static List<String> ExcludedGroupProjects = new List<string>();
         public static List<String> ExcludedIndividualProjects = new List<string>();
+        // If true, parser will exclude group projects and individual projects from the output list
         public static bool ShouldExcludeProjects;
+
+        // If true, parser will exclude individual projects which are older than x days.
+        public static bool ShouldRemoveAfterExpirary;
+
 
         static public List<MetaData> ParseString(String input)
         {
@@ -46,7 +51,18 @@ namespace Wosh.logic
                 data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
                 data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
                 // If the project name is in the excluded indiviual projects, don't add it to the ouput list.
-                if (!ExcludedIndividualProjects.Contains(data.Name)) list.Add(data);
+                if (ShouldExcludeProjects)
+                {
+                    if (!ExcludedIndividualProjects.Contains(data.Name)) list.Add(data);
+                }
+                else
+                {
+                    list.Add(data);
+                }
+                
+                // If the project is out of data, exclud it from the output list.
+
+
                 reader.ReadToFollowing("Project");
             }
             return list;
@@ -72,8 +88,10 @@ namespace Wosh.logic
                 GroupedMetaData value;
                 String groupName = data.GroupName;
                 // Pass, because we don't want to add this data to the output.
-                if (ExcludedGroupProjects.Contains(groupName)) continue;
-
+                if (ShouldExcludeProjects)
+                {
+                    if (ExcludedGroupProjects.Contains(groupName)) continue;
+                }
                 // Look for the group, if it isn't there, create it.
                 if (!groupData.TryGetValue(groupName, out value)) {
                     // No grouped data, must create our own.
