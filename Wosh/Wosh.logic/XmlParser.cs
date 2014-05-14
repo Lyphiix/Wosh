@@ -27,20 +27,16 @@ namespace Wosh.logic
         // If true, parser will exclude individual projects which are older than x days.
         public static bool ShouldRemoveAfterExpirary;
 
-<<<<<<< HEAD
-        static public List<MetaData> ParseString(String input)
-=======
-
         static public List<Project> ParseString(String input)
->>>>>>> 187fe870761bf383e335bbbf536d043da3d5c031
         {
             XmlReader reader = XmlReader.Create(new System.IO.StringReader(input));
             List<Project> list = new List<Project>();
 
-            reader.ReadToFollowing("Project");
-
-            while (!reader.EOF)
+            while (true)
             {
+                reader.ReadToFollowing("Project");
+                if (reader.EOF) break;
+
                 Project data = new Project();
 
                 if (reader.MoveToAttribute("name")) data.Name = reader.Value;
@@ -82,7 +78,6 @@ namespace Wosh.logic
                 }
                 
                 list.Add(data);
-                reader.ReadToFollowing("Project");
             }
             return list;
         }
