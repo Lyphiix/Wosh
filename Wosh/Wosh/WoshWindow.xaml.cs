@@ -91,7 +91,7 @@ namespace Wosh
                     Height = (ActualHeight - 39) / MaxRows,
                     Stroke = new SolidColorBrush(Colors.Black),
                     StrokeThickness = 1,
-                    Fill = new SolidColorBrush(ColorForGroupedMetaData(meta))
+                    Fill = new SolidColorBrush(meta.ColorForGroupedMetaData())
                 };
             Canvas.SetLeft(rectangle, column*rectangle.Width);
             Canvas.SetTop(rectangle, row*rectangle.Height);
@@ -137,24 +137,6 @@ namespace Wosh
                                                                tb.FontStretch),
                                                   tb.FontSize, Brushes.Black);
             return new Size(formattedText.Width, formattedText.Height);
-        }
-
-        private static Color ColorForMetaData(MetaData meta)
-        {
-            if (meta.Activity.Equals("Building")) return Colors.Yellow;
-            if (meta.LastBuildStatus.Equals("Success")) return Colors.LimeGreen;
-            if (meta.LastBuildStatus.Equals("Failure")) return Colors.Red;
-            return Colors.White;
-        }
-
-        private static Color ColorForGroupedMetaData(GroupedMetaData groupedMeta)
-        {
-            foreach (var meta in groupedMeta.SubData)
-            {
-                if (meta.LastBuildStatus.Equals("Failure")) return Colors.Red;
-                if (meta.Activity.Equals("Building")) return Colors.Yellow;
-            }
-            return Colors.LimeGreen;
         }
     }
 }
