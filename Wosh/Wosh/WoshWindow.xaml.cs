@@ -71,6 +71,7 @@ namespace Wosh
         // Called by timer - Redraws the screen
         private void OnTimedEvent(object source, EventArgs eventArgs)
         {
+            _canvas.Children.Clear();
             using (var webClient = new WebClient())
             {
                 DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml")));
