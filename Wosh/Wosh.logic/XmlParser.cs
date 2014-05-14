@@ -19,16 +19,25 @@ namespace Wosh.logic
     public class XmlParser
     {
         // A list of the projects names to be excluded from display.
-        public static List<String> ExcludedGroupProjects = new List<string>();
-        public static List<String> ExcludedIndividualProjects = new List<string>();
+        public List<String> ExcludedGroupProjects;
+        public List<String> ExcludedIndividualProjects;
         // If true, parser will exclude group projects and individual projects from the output list
-        public static bool ShouldExcludeProjects;
+        public bool ShouldExcludeProjects;
 
-        public static int DaysToExpirary = 30;
+        public int DaysToExpirary;
         // If true, parser will exclude individual projects which are older than x days.
-        public static bool ShouldRemoveAfterExpirary;
+        public bool ShouldRemoveAfterExpirary;
 
-        static public List<Project> ParseString(String input)
+        public XmlParser()
+        {
+            ExcludedGroupProjects = new List<string>();
+            ExcludedIndividualProjects = new List<string>();
+            ShouldExcludeProjects = false;
+            DaysToExpirary = 30;
+            ShouldRemoveAfterExpirary = false;
+        }
+
+        public List<Project> ParseString(String input)
         {
             using (var stringReader = new StringReader(input))
             using (var reader = XmlReader.Create(stringReader))
@@ -88,7 +97,7 @@ namespace Wosh.logic
             }
         }
 
-        static public List<Pipeline> ParseStringForGroup(String input)
+        public List<Pipeline> ParseStringForGroup(String input)
         {
             // Obtain the list of meta data from the other class method.
             List<Project> metaData = ParseString(input);
