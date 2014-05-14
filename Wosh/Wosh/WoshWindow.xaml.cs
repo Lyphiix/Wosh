@@ -110,6 +110,8 @@ namespace Wosh
             }
             Content = _canvas; // Add this segment to the screens content
             GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
         // Draws a single segment
