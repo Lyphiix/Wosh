@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Media;
+using NUnit.Framework;
 
 namespace Wosh.logic
 {
@@ -11,6 +12,7 @@ namespace Wosh.logic
         public String GroupName;
         public String Stage;
         public String Job;
+        public int occurence;
         // --
         public String Activity;
         public String LastBuildStatus;
@@ -22,5 +24,24 @@ namespace Wosh.logic
     {
         public String Name;
         public List<Project> SubData;
+        public bool shouldPlaySoundComparedTo(Pipeline comp)
+        {
+            foreach (Project p in SubData)
+            {
+                foreach (Project c in comp.SubData)
+                {
+                    // Checks to see whether the data we are looking at is the same type.
+                    if (c.Name.Equals(p.Name))
+                    {
+                        // Checks to see whether both are success, if they are, we do not want to know about it.
+                        if (!(c.LastBuildStatus.Equals("Success") && p.LastBuildStatus.Equals("Success")))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
     }
 }
