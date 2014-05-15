@@ -38,5 +38,6 @@ namespace Wosh.logic
     {
         public String Name;
         public List<Project> SubData;
+        public bool IsBrokenProject;
     }
 }

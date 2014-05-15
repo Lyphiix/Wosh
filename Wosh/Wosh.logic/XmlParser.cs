@@ -40,6 +40,10 @@ namespace Wosh.logic
         /// </summary>
         public bool ShouldRemoveAfterExpirary;
 
+        public bool ShouldShowBrokenProjects;
+
+        public static String BrokenProjectKey = "[-> ";
+
         public XmlParser()
         {
             ExcludedPipelines = new List<string>();
@@ -47,6 +51,7 @@ namespace Wosh.logic
             ShouldExcludeProjects = false;
             DaysToExpiry = 30;
             ShouldRemoveAfterExpirary = false;
+            ShouldShowBrokenProjects = false;
         }
 
         public List<Project> ParseString(String input)
@@ -102,7 +107,7 @@ namespace Wosh.logic
             }
         }
 
-        public TimeSpan GetTimeDifferenceBetweenDates(String date)
+        private TimeSpan GetTimeDifferenceBetweenDates(String date)
         {
             // Time format, (YEAR)-(MONTH)-(DAY)T(HOUR):(MINUTE):(SECOND)
             var now = DateTime.Now;
@@ -121,21 +126,9 @@ namespace Wosh.logic
         {
             // Create a dictornary to store the grouped data in.
             var groupData = new Dictionary<String, Pipeline>();
-            // Comment Block
-            #region
-            /*
-             * Loop throuh all the metadata.
-             * 
-             * If there is a group with the same "prefix" (E.g "Support :: Build", prefix is "Support")
-             *      Add it the the group.
-             * If there isn't, create a new grouped metadata object to store it in.
-             * 
-             * If the group name (the prefix) is in the excluded group projects class varable, we won't add it to the dictonary.
-             */
-            #endregion 
             // Code Block
             #region
-            foreach (var data in input)
+            foreach (Project data in input)
             {
                 Pipeline value;
                 var groupName = data.GroupName;
@@ -144,6 +137,18 @@ namespace Wosh.logic
                 {
                     if (ExcludedPipelines.Contains(groupName)) continue;
                 }
+
+                if (data.Status().Equals(SoundHandler.SoundHandlerSoundType.SoundHandlerSoundFail))
+                {
+                    value = new Pipeline();
+                    value.Name = BrokenProjectKey + data.Stage + " :: " + data.Job;
+                    value.SubData = new List<Project>();
+                    value.SubData.Add(data);
+                    value.IsBrokenProject = true;
+                    groupData.Add(value.Name, value);
+                    continue;
+                }
+
                 // Look for the group, if it isn't there, create it.
                 if (!groupData.TryGetValue(groupName, out value)) {
                     // No grouped data, must create our own.
@@ -157,5 +162,7 @@ namespace Wosh.logic
 
             return groupData.Values.ToList();
         }
+
+
     }
 }
