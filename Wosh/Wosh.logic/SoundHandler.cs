@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Wosh.logic
 {
@@ -63,10 +60,10 @@ namespace Wosh.logic
                 System.Threading.Thread.Sleep(1000);
             }
 
-            Console.WriteLine("Success: {0}, Failure: {1}", successSound, failSound);
+            Console.WriteLine("Success: {0} Sound, Failure: {1} Sound", successSound ? "Played" : "Didn't Play", failSound ? "Played" : "Didn't Play");
         }
 
-        public SoundHandlerSoundType CompareProjects(Project one, Project two)
+        private SoundHandlerSoundType CompareProjects(Project one, Project two)
         {
             if (one.Name.Equals(two.Name))
             {
@@ -82,7 +79,7 @@ namespace Wosh.logic
             return SoundHandlerSoundType.SoundHandlerSoundNo;
         }
 
-        public Dictionary<String, Project> GetProjectListAsDict(List<Project> input)
+        private Dictionary<String, Project> GetProjectListAsDict(List<Project> input)
         {
             Dictionary<String, Project> projectStatus = new Dictionary<String, Project>();
             foreach (Project pt in input)

@@ -105,7 +105,7 @@ namespace Wosh.logic
         }
 
         // Splits it up into different pipelines.
-        public List<Pipeline> ParseGroup(List<Project> input)
+        public List<Pipeline> ParseToPipeline(List<Project> input)
         {
             // Create a dictornary to store the grouped data in.
             Dictionary<String, Pipeline> groupData = new Dictionary<String, Pipeline>();

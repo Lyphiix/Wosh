@@ -40,9 +40,24 @@ namespace Wosh
         public XmlParser XmlParser;
 
         /// <summary>
-        /// Retains parsed MetaDatas for drawing when the window is resized
+        /// Retains parsed Pipelines for drawing when the window is resized
         /// </summary>
-        public List<Pipeline> GroupedMetaDatas;
+        public List<Pipeline> Pipelines;
+
+        /// <summary>
+        /// Retains old parsed Projects
+        /// </summary>
+        public List<Project> OldProjects;
+
+        /// <summary>
+        /// Retains the current parsed Projects
+        /// </summary>
+        public List<Project> Projects;
+
+        /// <summary>
+        /// Instance of the SoundHandler class
+        /// </summary>
+        public SoundHandler SoundHandler;
 
         /// <summary>
         /// The instance of the Configuration (Preferences) window
@@ -65,12 +80,15 @@ namespace Wosh
 
             XmlParser = new XmlParser();
 
-            // List of current GroupedMetaDatas
+            SoundHandler = new SoundHandler();
+
+            // Parse for the lists
             using (var webClient = new WebClient())
             {
                 try
                 {
-                    GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(Config.Default.URLToParse));
+                    OldProjects = Projects = XmlParser.ParseString(webClient.DownloadString(Config.Default.URLToParse));
+                    Pipelines = XmlParser.ParseToPipeline(Projects);
                 }
                 catch (Exception)
                 {
@@ -85,7 +103,7 @@ namespace Wosh
         private void CalculateMaximums()
         {
             Columns = 3; // TODO - Retrieve from config
-            Rows = GroupedMetaDatas.Count/Columns;
+            Rows = Pipelines.Count/Columns;
         }
 
         // Called by timer - Redraws the screen
@@ -96,11 +114,14 @@ namespace Wosh
             {
                 try
                 {
-                    DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(Config.Default.URLToParse)));
+                    OldProjects = Projects;
+                    Projects = XmlParser.ParseString(webClient.DownloadString(Config.Default.URLToParse));
+                    DrawScreen(Pipelines = XmlParser.ParseToPipeline(Projects));
+                    SoundHandler.PlaySound(OldProjects, Projects);
                 }
                 catch (Exception)
                 {
-                    DrawScreen(GroupedMetaDatas);
+                    DrawScreen(Pipelines);
                     Console.WriteLine("Failed to download string from URL");
                 }
             }
@@ -108,27 +129,27 @@ namespace Wosh
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            DrawScreen(GroupedMetaDatas);
+            DrawScreen(Pipelines);
         }
 
         // Draws the display on the window
-        private void DrawScreen(List<Pipeline> metaDatas)
+        private void DrawScreen(List<Pipeline> pipelines)
         {
             _canvas.Children.Clear();
             CalculateMaximums();
-            var metaArray = metaDatas.ToArray();
+            var pipelineArray = pipelines.ToArray();
             var counter = 0;
             for (var i = 0; i < Columns; i++)
             {
                 if ((Columns != 1) && (i == (Columns - 1)))
                 {
-                    Rows = metaDatas.Count - counter;
+                    Rows = pipelines.Count - counter;
                 }
                 for (var j = 0; j < Rows; j++)
                 {
                     try
                     {
-                        DrawPipelineSegment(i, j, (Pipeline)metaArray.GetValue(counter));
+                        DrawPipelineSegment(i, j, (Pipeline)pipelineArray.GetValue(counter));
                     }
                     catch (Exception)
                     {
