@@ -99,10 +99,15 @@ namespace Wosh
             _canvas = new Canvas();
         }
 
+        public void ForceRedraw()
+        {
+            DrawScreen(Pipelines);
+        }
+
         // Calculates the maximums for Columns and Rows - Columns is retrieved from config and Rows is calculated
         private void CalculateMaximums()
         {
-            Columns = 3; // TODO - Retrieve from config
+            Columns = Config.Default.NumOfColumns;
             Rows = Pipelines.Count/Columns;
         }
 
@@ -121,7 +126,7 @@ namespace Wosh
                 }
                 catch (Exception)
                 {
-                    DrawScreen(Pipelines);
+                    ForceRedraw();
                     Console.WriteLine("Failed to download string from URL");
                 }
             }
@@ -129,7 +134,7 @@ namespace Wosh
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            DrawScreen(Pipelines);
+            ForceRedraw();
         }
 
         // Draws the display on the window

@@ -58,5 +58,53 @@ namespace Wosh {
                 this["NumOfColumns"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsExcludedPipelinesCBoxChecked {
+            get {
+                return ((bool)(this["IsExcludedPipelinesCBoxChecked"]));
+            }
+            set {
+                this["IsExcludedPipelinesCBoxChecked"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ExcludedPipelines {
+            get {
+                return ((string)(this["ExcludedPipelines"]));
+            }
+            set {
+                this["ExcludedPipelines"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsExcludedProjectsCBoxChecked {
+            get {
+                return ((bool)(this["IsExcludedProjectsCBoxChecked"]));
+            }
+            set {
+                this["IsExcludedProjectsCBoxChecked"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ExcludedProjects {
+            get {
+                return ((string)(this["ExcludedProjects"]));
+            }
+            set {
+                this["ExcludedProjects"] = value;
+            }
+        }
     }
 }
