@@ -28,21 +28,19 @@ namespace Wosh.logic
                     Project pnew;
                     if (newDict.TryGetValue(key, out pnew))
                     {
-                        switch (CompareProjects(pold, pnew)) {
-                            case SoundHandlerSoundType.SoundHandlerSoundFail:
-                                if (!pold.HasPlayedSound) failSound = true;
-                                pnew.HasPlayedSound = true;
-                                break;
-                            case SoundHandlerSoundType.SoundHandlerSoundSuccess:
-                                if (!pold.HasPlayedSound) successSound = true;
-                                pnew.HasPlayedSound = true;
-                                break;
-                            case SoundHandlerSoundType.SoundHandlerSoundNo:
-                                pnew.HasPlayedSound = false;
-                                break;
-                            default:
-                                pnew.HasPlayedSound = false;
-                                break;
+                        if (!pold.Status().Equals(pnew.Status()))
+                        {
+                            switch (pnew.Status())
+                            {
+                                case SoundHandlerSoundType.SoundHandlerSoundFail:
+                                    failSound = true;
+                                    break;
+                                case SoundHandlerSoundType.SoundHandlerSoundSuccess:
+                                    successSound = true;
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                 }
@@ -61,22 +59,6 @@ namespace Wosh.logic
             }
 
             Console.WriteLine("Success: {0} Sound, Failure: {1} Sound", successSound ? "Played" : "Didn't Play", failSound ? "Played" : "Didn't Play");
-        }
-
-        private SoundHandlerSoundType CompareProjects(Project one, Project two)
-        {
-            if (one.Name.Equals(two.Name))
-            {
-                if (one.Status() > two.Status())
-                {
-                    return one.Status();
-                }
-                else
-                {
-                    return two.Status();
-                }
-            }
-            return SoundHandlerSoundType.SoundHandlerSoundNo;
         }
 
         private Dictionary<String, Project> GetProjectListAsDict(List<Project> input)
