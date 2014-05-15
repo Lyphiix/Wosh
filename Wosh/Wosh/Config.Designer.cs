@@ -62,12 +62,12 @@ namespace Wosh {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool IsExcludedPipelinesCBoxChecked {
+        public bool ShouldExcludePipelines {
             get {
-                return ((bool)(this["IsExcludedPipelinesCBoxChecked"]));
+                return ((bool)(this["ShouldExcludePipelines"]));
             }
             set {
-                this["IsExcludedPipelinesCBoxChecked"] = value;
+                this["ShouldExcludePipelines"] = value;
             }
         }
         
@@ -86,12 +86,12 @@ namespace Wosh {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool IsExcludedProjectsCBoxChecked {
+        public bool ShouldExcludeProjects {
             get {
-                return ((bool)(this["IsExcludedProjectsCBoxChecked"]));
+                return ((bool)(this["ShouldExcludeProjects"]));
             }
             set {
-                this["IsExcludedProjectsCBoxChecked"] = value;
+                this["ShouldExcludeProjects"] = value;
             }
         }
         

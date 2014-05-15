@@ -108,7 +108,7 @@ namespace Wosh
         private void CalculateMaximums()
         {
             Columns = Config.Default.NumOfColumns;
-            Rows = Pipelines.Count/Columns;
+            Rows = (int)Math.Ceiling((double)Pipelines.Count/Columns);
         }
 
         // Called by timer - Redraws the screen

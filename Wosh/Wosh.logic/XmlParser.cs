@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace Wosh.logic
@@ -18,22 +16,36 @@ namespace Wosh.logic
      * */
     public class XmlParser
     {
-        // A list of the projects names to be excluded from display.
-        public List<String> ExcludedGroupProjects;
-        public List<String> ExcludedIndividualProjects;
-        // If true, parser will exclude group projects and individual projects from the output list
+        // A list of the projects names to be excluded from display
+        public List<String> ExcludedPipelines;
+        public List<String> ExcludedProjects;
+
+        /// <summary>
+        /// If true, parser will exclude pipelines from the output list
+        /// </summary>
+        public bool ShouldExcludePipelines;
+
+        /// <summary>
+        /// If true, parser will exclude projects from the output list
+        /// </summary>
         public bool ShouldExcludeProjects;
 
-        public int DaysToExpirary;
-        // If true, parser will exclude individual projects which are older than x days.
+        /// <summary>
+        /// Number of days a project has to be left untouched before it gets excluded automatically
+        /// </summary>
+        public int DaysToExpiry;
+
+        /// <summary>
+        /// If true, parser will exclude individual projects which are older than x days
+        /// </summary>
         public bool ShouldRemoveAfterExpirary;
 
         public XmlParser()
         {
-            ExcludedGroupProjects = new List<string>();
-            ExcludedIndividualProjects = new List<string>();
+            ExcludedPipelines = new List<string>();
+            ExcludedProjects = new List<string>();
             ShouldExcludeProjects = false;
-            DaysToExpirary = 30;
+            DaysToExpiry = 30;
             ShouldRemoveAfterExpirary = false;
         }
 
@@ -42,14 +54,14 @@ namespace Wosh.logic
             using (var stringReader = new StringReader(input))
             using (var reader = XmlReader.Create(stringReader))
             {
-                List<Project> list = new List<Project>();
+                var list = new List<Project>();
 
                 while (true)
                 {
                     reader.ReadToFollowing("Project");
                     if (reader.EOF) break;
 
-                    Project data = new Project();
+                    var data = new Project();
                     #region
                     if (reader.MoveToAttribute("name")) data.Name = reader.Value;
                     if (reader.MoveToAttribute("activity")) data.Activity = reader.Value;
@@ -60,7 +72,7 @@ namespace Wosh.logic
                     #endregion
 
                     // Set the group name, the stage, and the job.
-                    String[] splitName = data.Name.Split(new[] {":", ":"}, StringSplitOptions.RemoveEmptyEntries);
+                    var splitName = data.Name.Split(new[] {":", ":"}, StringSplitOptions.RemoveEmptyEntries);
                     data.GroupName = splitName[0].Trim();
                     data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
                     data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
@@ -68,7 +80,7 @@ namespace Wosh.logic
                     #region
                     if (ShouldExcludeProjects)
                     {
-                        if (ExcludedIndividualProjects.Contains(data.Name)) continue;
+                        if (ExcludedProjects.Contains(data.Name)) continue;
                     }
                     #endregion
 
@@ -76,8 +88,8 @@ namespace Wosh.logic
                     #region
                     if (ShouldRemoveAfterExpirary)
                     {
-                        TimeSpan difference = getTimeDifferenceBetweenDates(data.LastBuildTime);
-                        if (difference.TotalDays >= DaysToExpirary)
+                        var difference = GetTimeDifferenceBetweenDates(data.LastBuildTime);
+                        if (difference.TotalDays >= DaysToExpiry)
                         {
                             continue;
                         }
@@ -90,16 +102,16 @@ namespace Wosh.logic
             }
         }
 
-        public TimeSpan getTimeDifferenceBetweenDates(String date)
+        public TimeSpan GetTimeDifferenceBetweenDates(String date)
         {
             // Time format, (YEAR)-(MONTH)-(DAY)T(HOUR):(MINUTE):(SECOND)
-            DateTime now = DateTime.Now;
+            var now = DateTime.Now;
 
-            string[] time = date.Split(new[] { '-', 'T', ':' }, StringSplitOptions.RemoveEmptyEntries);
+            var time = date.Split(new[] { '-', 'T', ':' }, StringSplitOptions.RemoveEmptyEntries);
 
-            DateTime then = new DateTime(Int32.Parse(time[0]), Int32.Parse(time[1]), Int32.Parse(time[2]),
+            var then = new DateTime(Int32.Parse(time[0]), Int32.Parse(time[1]), Int32.Parse(time[2]),
                                          Int32.Parse(time[3]), Int32.Parse(time[4]), Int32.Parse(time[5]));
-            TimeSpan difference = now - then;
+            var difference = now - then;
 
             return difference;
         }
@@ -108,7 +120,7 @@ namespace Wosh.logic
         public List<Pipeline> ParseToPipeline(List<Project> input)
         {
             // Create a dictornary to store the grouped data in.
-            Dictionary<String, Pipeline> groupData = new Dictionary<String, Pipeline>();
+            var groupData = new Dictionary<String, Pipeline>();
             // Comment Block
             #region
             /*
@@ -123,21 +135,19 @@ namespace Wosh.logic
             #endregion 
             // Code Block
             #region
-            foreach (Project data in input)
+            foreach (var data in input)
             {
                 Pipeline value;
-                String groupName = data.GroupName;
+                var groupName = data.GroupName;
                 // Pass, because we don't want to add this data to the output.
-                if (ShouldExcludeProjects)
+                if (ShouldExcludePipelines)
                 {
-                    if (ExcludedGroupProjects.Contains(groupName)) continue;
+                    if (ExcludedPipelines.Contains(groupName)) continue;
                 }
                 // Look for the group, if it isn't there, create it.
                 if (!groupData.TryGetValue(groupName, out value)) {
                     // No grouped data, must create our own.
-                    value = new Pipeline();
-                    value.Name = groupName;
-                    value.SubData = new List<Project>();
+                    value = new Pipeline {Name = groupName, SubData = new List<Project>()};
                     groupData.Add(groupName, value);
                 }
                 // Add the metadata to the group data's subdata.

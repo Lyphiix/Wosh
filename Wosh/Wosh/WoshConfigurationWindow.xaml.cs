@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -35,14 +38,14 @@ namespace Wosh
 
             NumOfColumnsTextBox.Text = Config.Default.NumOfColumns.ToString(CultureInfo.InvariantCulture);
 
-            ExcludedPipelinesCBox.IsChecked = Config.Default.IsExcludedPipelinesCBoxChecked;
+            ExcludedPipelinesCBox.IsChecked = Config.Default.ShouldExcludePipelines;
             if (!ExcludedPipelinesCBox.IsChecked.Value)
             {
                 ExcludedPipelinesTextBox.IsEnabled = false;
             }
             ExcludedPipelinesTextBox.Text = Config.Default.ExcludedPipelines;
             
-            ExcludedProjectsCBox.IsChecked = Config.Default.IsExcludedProjectsCBoxChecked;
+            ExcludedProjectsCBox.IsChecked = Config.Default.ShouldExcludeProjects;
             if (!ExcludedProjectsCBox.IsChecked.Value)
             {
                 ExcludedProjectsTextBox.IsEnabled = false;
@@ -74,13 +77,34 @@ namespace Wosh
                 MessageBox.Show("Please put a whole number in Number of Columns:", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            Config.Default.IsExcludedPipelinesCBoxChecked = ExcludedPipelinesCBox.IsChecked.Value;
+            Config.Default.ShouldExcludePipelines = ExcludedPipelinesCBox.IsChecked.Value;
             Config.Default.ExcludedPipelines = ExcludedPipelinesTextBox.Text;
+            using (var reader = new StringReader(ExcludedProjectsTextBox.Text))
+            {
+                // Loop over the lines in the string.
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    ParentWoshWindow.XmlParser.ExcludedProjects.Add(line);
+                }
+            }
 
-            Config.Default.IsExcludedProjectsCBoxChecked = ExcludedProjectsCBox.IsChecked.Value;
+            Config.Default.ShouldExcludeProjects = ExcludedProjectsCBox.IsChecked.Value;
             Config.Default.ExcludedProjects = ExcludedProjectsTextBox.Text;
+            using (var reader = new StringReader(ExcludedPipelinesTextBox.Text))
+            {
+                
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    ParentWoshWindow.XmlParser.ExcludedPipelines.Add(line);
+                }
+            }
 
             Config.Default.Save();
+
+            ParentWoshWindow.XmlParser.ShouldExcludePipelines = Config.Default.ShouldExcludePipelines;
+            ParentWoshWindow.XmlParser.ShouldExcludeProjects = Config.Default.ShouldExcludeProjects;
 
             ShouldDisplayWarning = false;
             Close();

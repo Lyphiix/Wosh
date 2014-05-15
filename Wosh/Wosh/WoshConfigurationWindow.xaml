@@ -12,9 +12,9 @@
         <Label Content="Number of Columns:" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.049,0.512"/>
         <TextBox Name="NumOfColumnsTextBox" HorizontalAlignment="Left" Margin="135,76,0,0" VerticalAlignment="Top" Width="136"/>
         <CheckBox Name="ExcludedPipelinesCBox" Unchecked="ExcludedPipelinesCBoxChecked" Checked="ExcludedPipelinesCBoxChecked" Content="Exclude Pipelines" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="ExcludedPipelinesTextBox" HorizontalAlignment="Left" Height="79" Margin="90,119,0,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" VerticalAlignment="Top" Width="181"/>
+        <TextBox Name="ExcludedPipelinesTextBox" HorizontalAlignment="Left" Height="79" Margin="90,119,0,0" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" VerticalAlignment="Top" Width="181"/>
         <CheckBox Name="ExcludedProjectsCBox" Unchecked="ExcludedProjectsCBoxChecked" Checked="ExcludedProjectsCBoxChecked" Content="Exclude Projects" HorizontalAlignment="Left" Margin="10,203,0,0" VerticalAlignment="Top"/>
-        <TextBox Name="ExcludedProjectsTextBox" HorizontalAlignment="Left" Height="79" Margin="90,223,0,0" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" VerticalAlignment="Top" Width="181"/>
+        <TextBox Name="ExcludedProjectsTextBox" HorizontalAlignment="Left" Height="79" Margin="90,223,0,0" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" VerticalAlignment="Top" Width="181"/>
         <Button Content="Save" HorizontalAlignment="Left" Margin="10,430,0,0" VerticalAlignment="Top" Width="261" Click="SaveConfig"/>
     </Grid>
 </Window>
