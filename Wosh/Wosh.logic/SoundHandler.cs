@@ -8,22 +8,88 @@ namespace Wosh.logic
 {
     public class SoundHandler
     {
-        public static bool ShouldPlaySound(List<Pipeline> oldPipe, List<Pipeline> currentPipe)
+        public enum SoundHandlerSoundType
         {
-            // projectList
-            if (currentPipe.Count > oldPipe.Count)
+            SoundHandlerSoundFail = 2,
+            SoundHandlerSoundSuccess = 1,
+            SoundHandlerSoundNo = 0,
+        }
+
+        public void PlaySound(List<Project> oldPipe, List<Project> currentPipe)
+        {
+            Dictionary<String, Project> oldDict = GetProjectListAsDict(oldPipe);
+            Dictionary<String, Project> newDict = GetProjectListAsDict(currentPipe);
+
+            bool failSound = false;
+            bool successSound = false;
+
+            foreach (String key in oldDict.Keys)
             {
-                // There has been a new addition, notify.
-                return true;
+                Project pold;
+                if (oldDict.TryGetValue(key, out pold))
+                {
+                    Project pnew;
+                    if (newDict.TryGetValue(key, out pnew))
+                    {
+                        switch (CompareProjects(pold, pnew)) {
+                            case SoundHandlerSoundType.SoundHandlerSoundFail:
+                                if (!pold.hasPlayedSound) failSound = true;
+                                pnew.hasPlayedSound = true;
+                                break;
+                            case SoundHandlerSoundType.SoundHandlerSoundSuccess:
+                                if (!pold.hasPlayedSound) successSound = true;
+                                pnew.hasPlayedSound = true;
+                                break;
+                            case SoundHandlerSoundType.SoundHandlerSoundNo:
+                                pnew.hasPlayedSound = false;
+                                break;
+                            default:
+                                pnew.hasPlayedSound = false;
+                                break;
+                        }
+                    }
+                }
             }
 
-            if (currentPipe.Count == oldPipe.Count)
+            if (failSound)
             {
-                // There has been no noticed change.
-                // Time to look for one.
+                System.Media.SystemSounds.Hand.Play();
+                System.Threading.Thread.Sleep(1000);
             }
 
-            return false;
+            if (successSound)
+            {
+                System.Media.SystemSounds.Exclamation.Play();
+                System.Threading.Thread.Sleep(1000);
+            }
+
+            Console.WriteLine("Success: {0}, Failure: {1}", successSound, failSound);
+        }
+
+        public SoundHandlerSoundType CompareProjects(Project one, Project two)
+        {
+            if (one.Name.Equals(two.Name))
+            {
+                if (one.Status() > two.Status())
+                {
+                    return one.Status();
+                }
+                else
+                {
+                    return two.Status();
+                }
+            }
+            return SoundHandlerSoundType.SoundHandlerSoundNo;
+        }
+
+        public Dictionary<String, Project> GetProjectListAsDict(List<Project> input)
+        {
+            Dictionary<String, Project> projectStatus = new Dictionary<String, Project>();
+            foreach (Project pt in input)
+            {
+                projectStatus.Add(pt.Name, pt);
+            }
+            return projectStatus;
         }
     }
 }   

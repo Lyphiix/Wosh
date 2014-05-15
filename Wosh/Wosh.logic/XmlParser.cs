@@ -50,13 +50,14 @@ namespace Wosh.logic
                     if (reader.EOF) break;
 
                     Project data = new Project();
-
+                    #region
                     if (reader.MoveToAttribute("name")) data.Name = reader.Value;
                     if (reader.MoveToAttribute("activity")) data.Activity = reader.Value;
                     if (reader.MoveToAttribute("lastBuildStatus")) data.LastBuildStatus = reader.Value;
                     if (reader.MoveToAttribute("lastBuildLabel")) data.LastBuildLabel = reader.Value;
                     if (reader.MoveToAttribute("lastBuildTime")) data.LastBuildTime = reader.Value;
                     if (reader.MoveToAttribute("webUrl")) data.WebUrl = reader.Value;
+                    #endregion
 
                     // Set the group name, the stage, and the job.
                     String[] splitName = data.Name.Split(new[] {":", ":"}, StringSplitOptions.RemoveEmptyEntries);
@@ -64,32 +65,24 @@ namespace Wosh.logic
                     data.Stage = splitName.Length >= 2 ? splitName[1].Trim() : String.Empty;
                     data.Job = splitName.Length >= 3 ? splitName[2].Trim() : String.Empty;
                     // If the project name is in the excluded indiviual projects, don't add it to the ouput list.
+                    #region
                     if (ShouldExcludeProjects)
                     {
                         if (ExcludedIndividualProjects.Contains(data.Name)) continue;
                     }
-                    else
-                    {
-                        list.Add(data);
-                    }
-                    // If the project is out of data, exclud it from the output list.
+                    #endregion
 
+                    // If the project is out of data, exclud it from the output list.
+                    #region
                     if (ShouldRemoveAfterExpirary)
                     {
-                        // Time format, (YEAR)-(MONTH)-(DAY)T(HOUR):(MINUTE):(SECOND)
-                        DateTime now = DateTime.Now;
-
-                        string[] time = data.LastBuildTime.Split(new[] {'-', 'T', ':'},
-                                                                 StringSplitOptions.RemoveEmptyEntries);
-
-                        DateTime then = new DateTime(Int32.Parse(time[0]), Int32.Parse(time[1]), Int32.Parse(time[2]),
-                                                     Int32.Parse(time[3]), Int32.Parse(time[4]), Int32.Parse(time[5]));
-                        TimeSpan difference = now - then;
+                        TimeSpan difference = getTimeDifferenceBetweenDates(data.LastBuildTime);
                         if (difference.TotalDays >= DaysToExpirary)
                         {
                             continue;
                         }
                     }
+                    #endregion
 
                     list.Add(data);
                 }
@@ -97,12 +90,27 @@ namespace Wosh.logic
             }
         }
 
-        public List<Pipeline> ParseStringForGroup(String input)
+        public TimeSpan getTimeDifferenceBetweenDates(String date)
         {
-            // Obtain the list of meta data from the other class method.
-            List<Project> metaData = ParseString(input);
+            // Time format, (YEAR)-(MONTH)-(DAY)T(HOUR):(MINUTE):(SECOND)
+            DateTime now = DateTime.Now;
+
+            string[] time = date.Split(new[] { '-', 'T', ':' }, StringSplitOptions.RemoveEmptyEntries);
+
+            DateTime then = new DateTime(Int32.Parse(time[0]), Int32.Parse(time[1]), Int32.Parse(time[2]),
+                                         Int32.Parse(time[3]), Int32.Parse(time[4]), Int32.Parse(time[5]));
+            TimeSpan difference = now - then;
+
+            return difference;
+        }
+
+        // Splits it up into different pipelines.
+        public List<Pipeline> ParseGroup(List<Project> input)
+        {
             // Create a dictornary to store the grouped data in.
             Dictionary<String, Pipeline> groupData = new Dictionary<String, Pipeline>();
+            // Comment Block
+            #region
             /*
              * Loop throuh all the metadata.
              * 
@@ -112,7 +120,10 @@ namespace Wosh.logic
              * 
              * If the group name (the prefix) is in the excluded group projects class varable, we won't add it to the dictonary.
              */
-            foreach (Project data in metaData)
+            #endregion 
+            // Code Block
+            #region
+            foreach (Project data in input)
             {
                 Pipeline value;
                 String groupName = data.GroupName;
@@ -132,6 +143,7 @@ namespace Wosh.logic
                 // Add the metadata to the group data's subdata.
                 value.SubData.Add(data);
             }
+            #endregion
 
             return groupData.Values.ToList();
         }
