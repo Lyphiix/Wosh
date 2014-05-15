@@ -20,7 +20,10 @@ namespace Wosh.logic
         public bool HasPlayedSound;
         public SoundHandler.SoundHandlerSoundType Status()
         {
-            if (LastBuildStatus.Equals("Success"))
+            if (Activity.Equals("Building"))
+            {
+                return SoundHandler.SoundHandlerSoundType.SoundHandlerSoundNo;
+            } else if (LastBuildStatus.Equals("Success"))
             {
                 return SoundHandler.SoundHandlerSoundType.SoundHandlerSoundSuccess;
             }
