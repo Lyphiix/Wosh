@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Wosh" GeneratedClassName="Config">
+  <Profiles />
+  <Settings>
+    <Setting Name="URLToParse" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://augo/go/cctray.xml</Value>
+    </Setting>
+    <Setting Name="PollSpeed" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="NumOfColumns" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

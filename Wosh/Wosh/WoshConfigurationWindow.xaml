@@ -6,9 +6,13 @@
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid>
         <Label Content="URl:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
-        <TextBox Name="UrlTextBox" HorizontalAlignment="Left" Margin="90,14,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="181"/>
+        <TextBox Name="UrlTextBox" HorizontalAlignment="Left" Margin="90,14,0,0" VerticalAlignment="Top" Width="181"/>
         <Label Content="Poll Speed:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="75"/>
-        <TextBox Name="PollSpeedTextBox" HorizontalAlignment="Left" Margin="90,45,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="181"/>
-        <Button Content="Save" HorizontalAlignment="Left" Margin="10,430,0,0" VerticalAlignment="Top" Width="261"/>
+        <TextBox Name="PollSpeedTextBox" HorizontalAlignment="Left" Margin="90,45,0,0" VerticalAlignment="Top" Width="181"/>
+        <Label Content="Number of Columns:" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.049,0.512"/>
+        <TextBox Name="NumOfColumnsTextBox" HorizontalAlignment="Left" Margin="135,76,0,0" VerticalAlignment="Top" Width="136"/>
+        <CheckBox Content="Exclude Pipelines" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top"/>
+        <CheckBox Content="Exclude Projects" HorizontalAlignment="Left" Margin="10,119,0,0" VerticalAlignment="Top"/>
+        <Button Content="Save" HorizontalAlignment="Left" Margin="10,430,0,0" VerticalAlignment="Top" Width="261" Click="SaveConfig"/>
     </Grid>
 </Window>

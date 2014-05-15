@@ -24,7 +24,7 @@ namespace Wosh.logic
     {
         public String Name;
         public List<Project> SubData;
-        public bool shouldPlaySoundComparedTo(Pipeline comp)
+        public bool ShouldPlaySoundComparedTo(Pipeline comp)
         {
             foreach (Project p in SubData)
             {

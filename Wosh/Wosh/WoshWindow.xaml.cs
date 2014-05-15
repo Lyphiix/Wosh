@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Media;
+using System.ComponentModel;
+using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,7 +9,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using Wosh.Properties;
 using Wosh.logic;
 
 namespace Wosh
@@ -46,7 +45,7 @@ namespace Wosh
         public List<Pipeline> GroupedMetaDatas;
 
         /// <summary>
-        /// The Config (Preferences) window instance
+        /// The instance of the Configuration (Preferences) window
         /// </summary>
         public WoshConfigurationWindow ConfigurationWindow;
 
@@ -60,7 +59,7 @@ namespace Wosh
             // Timer set up
             UpdateTimer = new DispatcherTimer();
             UpdateTimer.Tick += OnTimedEvent;
-            UpdateTimer.Interval = new TimeSpan(0, 0, 5); // Sets the timer's interval to 15 seconds
+            UpdateTimer.Interval = new TimeSpan(0, 0, Config.Default.PollSpeed); // Sets the timer's interval to 15 seconds
             // TODO - Make the interval get retrieved from config
             UpdateTimer.Start();
 
@@ -71,7 +70,7 @@ namespace Wosh
             {
                 try
                 {
-                    GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(Settings.Default.URLToParse));
+                    GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(Config.Default.URLToParse));
                 }
                 catch (Exception)
                 {
@@ -92,11 +91,12 @@ namespace Wosh
         // Called by timer - Redraws the screen
         private void OnTimedEvent(object source, EventArgs eventArgs)
         {
+            Console.WriteLine("Timer went off!");
             using (var webClient = new WebClient())
             {
                 try
                 {
-                    DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(@"http://augo/go/cctray.xml")));
+                    DrawScreen(GroupedMetaDatas = XmlParser.ParseStringForGroup(webClient.DownloadString(Config.Default.URLToParse)));
                 }
                 catch (Exception)
                 {
@@ -183,7 +183,7 @@ namespace Wosh
             _canvas.Children.Add(viewBox);
         }
 
-        // Returns the color of 
+        // Returns the color of the given Project
         public Color ColorForProject(Project project)
         {
             if (project.Activity.Equals("Building")) return Colors.Yellow;
@@ -191,25 +191,42 @@ namespace Wosh
             return (project.LastBuildStatus.Equals("Failure")) ? Colors.Red : Colors.White;
         }
 
+        // Returns the color of the given Pipeline
         public Color ColorForPipeline(Pipeline pipeline)
         {
+            var colorReturn = Colors.LimeGreen;
             foreach (var project in pipeline.SubData)
             {
                 if (project.LastBuildStatus.Equals("Failure")) return Colors.Red;
-                if (project.Activity.Equals("Building")) return Colors.Yellow;
+                if (project.Activity.Equals("Building")) colorReturn =  Colors.Yellow;
             }
-            return Colors.LimeGreen;
+            return colorReturn;
         }
 
         private void KeyPressed(object sender, KeyEventArgs e)
         {
            if ((e.Key == Key.F2))
            {
-               ConfigurationWindow.Show();
+               try
+               {
+                   ConfigurationWindow.Show();
+                   ConfigurationWindow.Activate();
+               }
+               catch (Exception)
+               {
+                    ConfigurationWindow = new WoshConfigurationWindow(this);
+                    ConfigurationWindow.Show();
+                    ConfigurationWindow.Activate();
+               }
            }
         }
 
-        protected override void OnClosed(EventArgs e)
+        public static bool IsWindowOpen<T>(string name = "") where T : Window
+        {
+            return string.IsNullOrEmpty(name) ? Application.Current.Windows.OfType<T>().Any() : Application.Current.Windows.OfType<T>().Any(w => w.Name.Equals(name));
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
         {
             UpdateTimer.Stop();
         }
