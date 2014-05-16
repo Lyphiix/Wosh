@@ -135,6 +135,9 @@ namespace Wosh
 
             ParentWoshWindow.ShouldPlaySounds = Config.Default.ShouldPlaySounds;
 
+            ParentWoshWindow.SoundHandler.SuccessSound = Config.Default.SuccededSound;
+            ParentWoshWindow.SoundHandler.FailSound = Config.Default.FailedSound;
+
             ShouldDisplayWarning = false;
             Close();
 
