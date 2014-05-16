@@ -85,15 +85,17 @@ namespace Wosh
             // Parse for the lists
             using (var webClient = new WebClient())
             {
+                var x = "";
                 try
                 {
-                    OldProjects = Projects = XmlParser.ParseString(webClient.DownloadString(Config.Default.URLToParse));
-                    Pipelines = XmlParser.ParseToPipeline(Projects);
+                    x = webClient.DownloadString(Config.Default.URLToParse);
                 }
                 catch (Exception)
                 {
                     MessageBox.Show("Failed to download string - please check that the correct URL is set", "Invalid URL");
                 }
+                OldProjects = Projects = XmlParser.ParseString(x);
+                Pipelines = XmlParser.ParseToPipeline(Projects);
             }
 
             _canvas = new Canvas();

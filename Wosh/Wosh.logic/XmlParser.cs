@@ -137,16 +137,26 @@ namespace Wosh.logic
                 {
                     if (ExcludedPipelines.Contains(groupName)) continue;
                 }
+                if (ShouldShowBrokenProjects) {
 
-                if (data.Status().Equals(SoundHandler.SoundHandlerSoundType.SoundHandlerSoundFail))
-                {
-                    value = new Pipeline();
-                    value.Name = BrokenProjectKey + data.Stage + " :: " + data.Job;
-                    value.SubData = new List<Project>();
-                    value.SubData.Add(data);
-                    value.IsBrokenProject = true;
-                    groupData.Add(value.Name, value);
-                    continue;
+                    if (data.Status().Equals(SoundHandler.SoundHandlerSoundType.SoundHandlerSoundFail))
+                    {
+                        if (!groupData.TryGetValue(data.Stage, out value))
+                        {
+                            value = new Pipeline();
+                            value.Name = BrokenProjectKey + data.Stage;
+                            value.SubData = new List<Project>();
+                            value.SubData.Add(data);
+                            value.IsBrokenProject = true;
+                            groupData.Add(data.Stage, value);
+                            continue;
+                        }
+                        else
+                        {
+                            value.SubData.Add(data);
+                            continue;
+                        }
+                    }
                 }
 
                 // Look for the group, if it isn't there, create it.
@@ -159,6 +169,42 @@ namespace Wosh.logic
                 value.SubData.Add(data);
             }
             #endregion
+
+            if (ShouldShowBrokenProjects)
+            {
+                #region
+                Dictionary<String, Pipeline> tempAdd = new Dictionary<String, Pipeline>();
+                List<String> tempRemove = new List<String>();
+
+                foreach (Pipeline value in groupData.Values)
+                {
+                    Pipeline pipeLineName;
+                    var groupName = value.SubData[0].GroupName;
+                    if (value.IsBrokenProject && !groupData.TryGetValue(groupName, out pipeLineName))
+                    {
+                        if (!tempAdd.TryGetValue(groupName, out pipeLineName))
+                        {
+                            pipeLineName = new Pipeline();
+                            pipeLineName.SubData = value.SubData;
+                            pipeLineName.Name = value.SubData[0].GroupName;
+                            tempAdd.Add(pipeLineName.Name, pipeLineName);
+                        }
+                        tempRemove.Add(value.SubData[0].Stage);
+                    }
+                }
+
+                foreach (String key in tempAdd.Keys)
+                {
+                    Pipeline pipe;
+                    if (tempAdd.TryGetValue(key, out pipe)) groupData.Add(key, pipe);
+                }
+                foreach (String key in tempRemove)
+                {
+                    groupData.Remove(key);
+                }
+                #endregion
+            }
+
 
             return groupData.Values.ToList();
         }
