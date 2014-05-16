@@ -64,6 +64,15 @@ namespace Wosh
         /// </summary>
         public WoshConfigurationWindow ConfigurationWindow;
 
+        /// <summary>
+        /// Error
+        /// </summary>
+        public enum Error
+        {
+            ErrorWebException,
+            ErrorInvalidUrl
+        }
+
         public WoshWindow()
         {
             Width = SystemParameters.PrimaryScreenWidth;
@@ -78,29 +87,30 @@ namespace Wosh
             // TODO - Make the interval get retrieved from config
             UpdateTimer.Start();
 
-            XmlParser = new XmlParser();
+            XmlParser = new XmlParser
+                {
+                    ShouldShowBrokenProjects = true
+                };
 
             SoundHandler = new SoundHandler();
 
             // Parse for the lists
             using (var webClient = new WebClient())
             {
-                var x = "";
                 try
                 {
-                    x = webClient.DownloadString(Config.Default.URLToParse);
+                    OldProjects = Projects = XmlParser.ParseString(webClient.DownloadString(Config.Default.URLToParse));
+                    Pipelines = XmlParser.ParseToPipeline(Projects);
                 }
                 catch (WebException)
                 {
-                    DrawErrorScreen();
+                    DrawErrorScreen(Error.ErrorWebException);
                 }
                 catch (Exception)
                 {
                     OldProjects = Projects = new List<Project>();
                     Pipelines = new List<Pipeline>();
                 }
-                OldProjects = Projects = XmlParser.ParseString(x);
-                Pipelines = XmlParser.ParseToPipeline(Projects);
             }
 
             _canvas = new Canvas {Background = new SolidColorBrush(Colors.Black)};
@@ -128,7 +138,6 @@ namespace Wosh
 
         private void TimerScreenDraw()
         {
-            Console.WriteLine("Drawing..");
             using (var webClient = new WebClient())
             {
                 try
@@ -140,29 +149,11 @@ namespace Wosh
                 }
                 catch (WebException)
                 {
-                    Console.WriteLine("Caught Web Exception");
-                    DrawErrorScreen();
+                    DrawErrorScreen(Error.ErrorWebException);
                 }
                 catch (System.Xml.XmlException)
                 {
-                    var result = MessageBox.Show("An invalid URL was parsed - please double check the URL preference",
-                                                 "Invalid URL", MessageBoxButton.OK, MessageBoxImage.Error);
-                    if (result == MessageBoxResult.OK)
-                    {
-                        try
-                        {
-                            ConfigurationWindow.Show();
-                            ConfigurationWindow.Activate();
-                            ConfigurationWindow.UrlTextBox.Focus();
-                        }
-                        catch (Exception)
-                        {
-                            ConfigurationWindow = new WoshConfigurationWindow(this);
-                            ConfigurationWindow.Show();
-                            ConfigurationWindow.Activate();
-                            ConfigurationWindow.UrlTextBox.Focus();
-                        }
-                    }
+                    DrawErrorScreen(Error.ErrorInvalidUrl);
                 }
                 catch (Exception)
                 {
@@ -179,7 +170,6 @@ namespace Wosh
         // Draws the display on the window
         private void DrawScreen(List<Pipeline> pipelines)
         {
-            Console.WriteLine("Test");
             _canvas.Children.Clear();
             var pipelineArray = pipelines.ToArray();
             var counter = 0;
@@ -207,10 +197,16 @@ namespace Wosh
             GC.Collect();
         }
 
-        private void DrawErrorScreen()
+        private void DrawErrorScreen(Error error)
         {
             _canvas.Children.Clear();
-            Console.WriteLine("Drawing Error Screen - TODO - MAKE THE ACTUAL ERROR SCREEN");
+            switch (error)
+            {
+                case Error.ErrorWebException:
+                    break;
+                case Error.ErrorInvalidUrl:
+                    break;
+            }
         }
 
         // Draws a single segment
@@ -247,8 +243,9 @@ namespace Wosh
             if (pipeline.IsBrokenProject)
             {
                 textBlock.TextAlignment = TextAlignment.Left;
-                //viewBox.MinWidth = (rectangle.Width / 100) * 70;
-                //viewBox.MaxWidth = (rectangle.Width / 100) * 70;
+                viewBox.MinWidth = (rectangle.Width / 100) * 75;
+                viewBox.MaxWidth = (rectangle.Width / 100) * 75;
+                Canvas.SetLeft(viewBox, (column * rectangle.Width) + ((rectangle.Width / 100) * 25));
             }
             else
             {
