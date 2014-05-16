@@ -19,16 +19,21 @@ namespace Wosh.logic
             cat.SetOutputToDefaultAudioDevice();
             cat.SelectVoiceByHints(System.Speech.Synthesis.VoiceGender.Female, System.Speech.Synthesis.VoiceAge.Teen, 0, new System.Globalization.CultureInfo("zh-Hans"));
             System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Interval = new System.Random().Next(60000 * 2, 120000 * 2);
+            timer.Interval = new System.Random().Next(60000 * 60, 120000 * 60);
             timer.Elapsed += CallBack;
             timer.Enabled = true;
+
+            FailSound = "";
+            SuccessSound = "";
         }
 
         private void CallBack(Object source, System.Timers.ElapsedEventArgs e)
         {
             cat.SpeakAsync("Meow");
-
         }
+
+        public String FailSound;
+        public String SuccessSound;
 
         public void PlaySound(List<Project> oldPipe, List<Project> currentPipe)
         {
@@ -66,14 +71,34 @@ namespace Wosh.logic
 
             if (failSound)
             {
-                System.Media.SystemSounds.Hand.Play();
-                System.Threading.Thread.Sleep(1000);
+                if (!FailSound.Equals(""))
+                {
+                    System.Windows.Media.MediaPlayer x = new System.Windows.Media.MediaPlayer();
+                    x.Open(new Uri(FailSound));
+                    x.Play();
+                }
+                else
+                {
+                    System.Media.SystemSounds.Hand.Play();
+                    System.Threading.Thread.Sleep(1000);
+                }
             }
 
             if (successSound)
             {
-                System.Media.SystemSounds.Exclamation.Play();
-                System.Threading.Thread.Sleep(1000);
+                if (!SuccessSound.Equals(""))
+                {
+                    System.Threading.ThreadPool.QueueUserWorkItem(callback => {
+                        System.Windows.Media.MediaPlayer x = new System.Windows.Media.MediaPlayer();
+                        x.Open(new Uri(SuccessSound));
+                        x.Play();
+                    });
+                }
+                else
+                {
+                    System.Media.SystemSounds.Exclamation.Play();
+                    System.Threading.Thread.Sleep(1000);
+                }
             }
 
             Console.WriteLine("Success: {0} Sound, Failure: {1} Sound", successSound ? "Played" : "Didn't Play", failSound ? "Played" : "Didn't Play");
