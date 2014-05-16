@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="URLToParse" Type="System.String" Scope="User">
-      <Value Profile="(Default)">http://augo/go/cctray.xml</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="PollSpeed" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">5</Value>
@@ -17,11 +17,23 @@
     <Setting Name="ExcludedPipelines" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="ShouldExcludeProjects" Type="System.Boolean" Scope="User">
+    <Setting Name="ShouldShowBrokenStages" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShouldAutoExcludeOldProjects" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="ExcludedProjects" Type="System.String" Scope="User">
+    <Setting Name="ExcludeProjectsAfterDays" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">30</Value>
+    </Setting>
+    <Setting Name="FailedSound" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SuccededSound" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ShouldPlaySounds" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -89,33 +89,36 @@ namespace Wosh
 
             XmlParser = new XmlParser
                 {
-                    ShouldShowBrokenProjects = false
+                    ShouldShowBrokenProjects = Config.Default.ShouldShowBrokenStages,
+                    ShouldRemoveAfterExpirary = Config.Default.ShouldAutoExcludeOldProjects,
+                    DaysToExpiry = Config.Default.ExcludeProjectsAfterDays
                 };
 
             SoundHandler = new SoundHandler();
 
+            _canvas = new Canvas { Background = new SolidColorBrush(Colors.Black) };
+
             // Parse for the lists
-            using (var webClient = new WebClient())
+            try
             {
-                try
+                using (var webClient = new WebClient())
                 {
                     OldProjects = Projects = XmlParser.ParseString(webClient.DownloadString(Config.Default.URLToParse));
                     Pipelines = XmlParser.ParseToPipeline(Projects);
                 }
-                catch (WebException)
-                {
-                    DrawErrorScreen(Error.ErrorWebException);
-                }
-                catch (Exception)
-                {
-                    OldProjects = Projects = new List<Project>();
-                    Pipelines = new List<Pipeline>();
-                }
+            }
+            catch (Exception)
+            {
+                OldProjects = Projects = new List<Project>();
+                Pipelines = new List<Pipeline>();
             }
 
-            _canvas = new Canvas {Background = new SolidColorBrush(Colors.Black)};
-
             CalculateMaximums();
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            TimerScreenDraw();
         }
 
         public void ForceRedraw()
@@ -127,7 +130,7 @@ namespace Wosh
         private void CalculateMaximums()
         {
             Columns = Config.Default.NumOfColumns;
-            Rows = (int)Math.Ceiling((double)Pipelines.Count/Columns);
+            Rows = (int)Math.Ceiling((double)Pipelines.Count / Columns);
         }
 
         // Called by timer - Redraws the screen
@@ -138,27 +141,33 @@ namespace Wosh
 
         private void TimerScreenDraw()
         {
-            using (var webClient = new WebClient())
+            try
             {
-                try
+                using (var webClient = new WebClient())
                 {
                     OldProjects = Projects;
-                    Projects = XmlParser.ParseString(webClient.DownloadString(Config.Default.URLToParse));
-                    DrawScreen(Pipelines = XmlParser.ParseToPipeline(Projects));
+                    var x = webClient.DownloadString(Config.Default.URLToParse);
+                    Projects = XmlParser.ParseString(x);
+                    Pipelines = XmlParser.ParseToPipeline(Projects);
+                    DrawScreen(Pipelines);
                     SoundHandler.PlaySound(OldProjects, Projects);
                 }
-                catch (WebException)
-                {
-                    DrawErrorScreen(Error.ErrorWebException);
-                }
-                catch (System.Xml.XmlException)
-                {
-                    DrawErrorScreen(Error.ErrorInvalidUrl);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Error");
-                }
+            }
+            catch (WebException)
+            {
+                DrawErrorScreen(Error.ErrorWebException);
+            }
+            catch (System.Xml.XmlException)
+            {
+                DrawErrorScreen(Error.ErrorInvalidUrl);
+            }
+            catch (ArgumentException)
+            {
+                DrawErrorScreen(Error.ErrorInvalidUrl);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error");
             }
         }
 
@@ -171,17 +180,18 @@ namespace Wosh
         private void DrawScreen(List<Pipeline> pipelines)
         {
             _canvas.Children.Clear();
-            var pipelineArray = pipelines.ToArray();
-            var counter = 0;
-            for (var i = 0; i < Columns; i++)
+            if (Pipelines.Any())
             {
-                for (var j = 0; j < Rows; j++)
+                CalculateMaximums();
+                var pipelineArray = pipelines.ToArray();
+                var counter = 0;
+                for (var i = 0; i < Columns; i++)
                 {
-                    if (pipelineArray.Count() != 0)
+                    for (var j = 0; j < Rows; j++)
                     {
                         try
                         {
-                            DrawPipelineSegment(i, j, (Pipeline) pipelineArray.GetValue(counter));
+                            DrawPipelineSegment(i, j, (Pipeline)pipelineArray.GetValue(counter));
                             counter++;
                         }
                         catch (Exception)
@@ -190,6 +200,28 @@ namespace Wosh
                         }
                     }
                 }
+            }
+            else
+            {
+                var viewBox = new Viewbox
+                {
+                    MaxWidth = (ActualWidth / 100) * 80,
+                    MaxHeight = ActualHeight / 2
+                };
+                Canvas.SetLeft(viewBox, (ActualWidth / 100) * 10);
+                Canvas.SetTop(viewBox, (ActualHeight / 3));
+
+                var textBlock = new TextBlock // Contains the name of the Pipeline to display
+                {
+                    Text = "There is nothing to parse at the given URL\nDouble check URL setting",
+                    Foreground = new SolidColorBrush(Colors.White),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
+                    TextWrapping = TextWrapping.Wrap
+                };
+
+                viewBox.Child = textBlock;
+                _canvas.Children.Add(viewBox);
             }
             Content = _canvas; // Add this segment to the screens content
             GC.Collect();
@@ -203,8 +235,94 @@ namespace Wosh
             switch (error)
             {
                 case Error.ErrorWebException:
+                    var errorViewBox = new Viewbox
+                        {
+                            MaxWidth = (ActualWidth / 100) * 80,
+                            MaxHeight = ActualHeight / 2
+                        };
+                    Canvas.SetLeft(errorViewBox, (ActualWidth / 100) * 10);
+
+                    var errorTextBlock = new TextBlock // Contains the name of the Pipeline to display
+                    {
+                        Text = "Network Error",
+                        Foreground = new SolidColorBrush(Colors.White),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    };
+
+                    var timerViewBox = new Viewbox
+                        {
+                            MaxWidth = (ActualWidth / 100) * 50,
+                            MaxHeight = ActualHeight / 2
+                        };
+                    Canvas.SetTop(timerViewBox, (ActualHeight / 2) + 10);
+                    Canvas.SetLeft(timerViewBox, (ActualWidth / 100) * 25);
+
+                    var timerTextBlock = new TextBlock
+                        {
+                            Foreground = new SolidColorBrush(Colors.White),
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        };
+
+                    var time = TimeSpan.FromSeconds(Config.Default.PollSpeed - 1);
+                    var timer = new DispatcherTimer();
+                    timer = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, delegate
+                        {
+                            timerTextBlock.Text = time.ToString("c");
+                            if (time == TimeSpan.Zero) timer.Stop();
+                            time = time.Add(TimeSpan.FromSeconds(-1));
+                        }, Application.Current.Dispatcher);
+
+                    timer.Start();
+
+                    timerViewBox.Child = timerTextBlock;
+                    errorViewBox.Child = errorTextBlock;
+                    _canvas.Children.Add(timerViewBox);
+                    _canvas.Children.Add(errorViewBox);
                     break;
                 case Error.ErrorInvalidUrl:
+                    var viewBox = new Viewbox
+                        {
+                            MaxWidth = (ActualWidth / 100) * 80,
+                            MaxHeight = ActualHeight / 2
+                        };
+                    Canvas.SetLeft(viewBox, (ActualWidth / 100) * 10);
+
+                    var textBlock = new TextBlock // Contains the name of the Pipeline to display
+                    {
+                        Text = "Network Error",
+                        Foreground = new SolidColorBrush(Colors.White),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                    };
+
+                    var box = new Viewbox
+                        {
+                            MaxWidth = (ActualWidth / 100) * 50,
+                            MaxHeight = ActualHeight / 2
+                        };
+                    Canvas.SetTop(box, (ActualHeight / 2) + 10);
+                    Canvas.SetLeft(box, (ActualWidth / 100) * 25);
+
+                    var block = new TextBlock
+                        {
+                            Foreground = new SolidColorBrush(Colors.White),
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        };
+
+                    var span = TimeSpan.FromSeconds(Config.Default.PollSpeed - 1);
+                    var dispatcherTimer = new DispatcherTimer();
+                    dispatcherTimer = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, delegate
+                        {
+                            block.Text = span.ToString("c");
+                            if (span == TimeSpan.Zero) dispatcherTimer.Stop();
+                            span = span.Add(TimeSpan.FromSeconds(-1));
+                        }, Application.Current.Dispatcher);
+
+                    dispatcherTimer.Start();
+
+                    box.Child = block;
+                    viewBox.Child = textBlock;
+                    _canvas.Children.Add(box);
+                    _canvas.Children.Add(viewBox);
                     break;
             }
         }
@@ -221,8 +339,8 @@ namespace Wosh
                     StrokeThickness = 1,
                     Fill = new SolidColorBrush(ColorForPipeline(pipeline))
                 };
-            Canvas.SetLeft(rectangle, column*rectangle.Width);
-            Canvas.SetTop(rectangle, row*rectangle.Height);
+            Canvas.SetLeft(rectangle, column * rectangle.Width);
+            Canvas.SetTop(rectangle, row * rectangle.Height);
             _canvas.Children.Add(rectangle);
 
             var textBlock = new TextBlock // Contains the name of the Pipeline to display
@@ -234,22 +352,16 @@ namespace Wosh
             var viewBox = new Viewbox // Scales the containing elements
             {
                 MaxWidth = (rectangle.Width / 100) * 80,
-                MinHeight = (rectangle.Height/100)*90,
+                MinHeight = (rectangle.Height / 100) * 90,
                 MaxHeight = (rectangle.Height / 100) * 90
             };
             Canvas.SetLeft(viewBox, (column * rectangle.Width) + ((rectangle.Width / 100) * 10));
             Canvas.SetTop(viewBox, (row * rectangle.Height));
-            
+
             if (pipeline.IsBrokenProject)
             {
                 textBlock.TextAlignment = TextAlignment.Left;
-                viewBox.MinWidth = (rectangle.Width / 100) * 75;
-                viewBox.MaxWidth = (rectangle.Width / 100) * 75;
-                Canvas.SetLeft(viewBox, (column * rectangle.Width) + ((rectangle.Width / 100) * 25));
-            }
-            else
-            {
-                viewBox.MinWidth = (rectangle.Height / 100) * 80;
+                textBlock.Text = "    " + textBlock.Text;
             }
 
             viewBox.Child = textBlock;
@@ -271,27 +383,27 @@ namespace Wosh
             foreach (var project in pipeline.SubData)
             {
                 if (project.LastBuildStatus.Equals("Failure")) return Colors.Red;
-                if (project.Activity.Equals("Building")) colorReturn =  Colors.Yellow;
+                if (project.Activity.Equals("Building")) colorReturn = Colors.Yellow;
             }
             return colorReturn;
         }
 
         private void KeyPressed(object sender, KeyEventArgs e)
         {
-           if ((e.Key == Key.F2))
-           {
-               try
-               {
-                   ConfigurationWindow.Show();
-                   ConfigurationWindow.Activate();
-               }
-               catch (Exception)
-               {
+            if ((e.Key == Key.F2))
+            {
+                try
+                {
+                    ConfigurationWindow.Show();
+                    ConfigurationWindow.Activate();
+                }
+                catch (Exception)
+                {
                     ConfigurationWindow = new WoshConfigurationWindow(this);
                     ConfigurationWindow.Show();
                     ConfigurationWindow.Activate();
-               }
-           }
+                }
+            }
         }
 
         public static bool IsWindowOpen<T>(string name = "") where T : Window
