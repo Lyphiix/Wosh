@@ -89,7 +89,7 @@ namespace Wosh
 
             XmlParser = new XmlParser
                 {
-                    ShouldShowBrokenProjects = true
+                    ShouldShowBrokenProjects = false
                 };
 
             SoundHandler = new SoundHandler();
@@ -181,12 +181,12 @@ namespace Wosh
                     {
                         try
                         {
-                            DrawPipelineSegment(i, j, (Pipeline)pipelineArray.GetValue(counter));
+                            DrawPipelineSegment(i, j, (Pipeline) pipelineArray.GetValue(counter));
                             counter++;
                         }
                         catch (Exception)
                         {
-                            counter--;
+                            Console.WriteLine("Do nothing");
                         }
                     }
                 }
