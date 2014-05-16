@@ -156,7 +156,18 @@ namespace Wosh.logic
                             value.SubData.Add(data);
                             continue;
                         }
-                    }
+                    }/*
+                    else if (data.Status().Equals(SoundHandler.SoundHandlerSoundType.SoundHandlerSoundNo))
+                    {
+                        if (!groupData.TryGetValue(data.Stage, out value))
+                        {
+                            value = new Pipeline();
+                            value.Name = data.Stage;
+                            value.SubData = new List<Project>();
+                            value.SubData.Add(data);
+                            groupData.Add(data.Stage, value);
+                        }
+                    }*/
                 }
 
                 // Look for the group, if it isn't there, create it.
