@@ -25,7 +25,7 @@ namespace Wosh {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://augo/go/cctray.xml")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string URLToParse {
             get {
                 return ((string)(this["URLToParse"]));
@@ -85,25 +85,73 @@ namespace Wosh {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ShouldExcludeProjects {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShouldShowBrokenStages {
             get {
-                return ((bool)(this["ShouldExcludeProjects"]));
+                return ((bool)(this["ShouldShowBrokenStages"]));
             }
             set {
-                this["ShouldExcludeProjects"] = value;
+                this["ShouldShowBrokenStages"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShouldAutoExcludeOldProjects {
+            get {
+                return ((bool)(this["ShouldAutoExcludeOldProjects"]));
+            }
+            set {
+                this["ShouldAutoExcludeOldProjects"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public int ExcludeProjectsAfterDays {
+            get {
+                return ((int)(this["ExcludeProjectsAfterDays"]));
+            }
+            set {
+                this["ExcludeProjectsAfterDays"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ExcludedProjects {
+        public string FailedSound {
             get {
-                return ((string)(this["ExcludedProjects"]));
+                return ((string)(this["FailedSound"]));
             }
             set {
-                this["ExcludedProjects"] = value;
+                this["FailedSound"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SuccededSound {
+            get {
+                return ((string)(this["SuccededSound"]));
+            }
+            set {
+                this["SuccededSound"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShouldPlaySounds {
+            get {
+                return ((bool)(this["ShouldPlaySounds"]));
+            }
+            set {
+                this["ShouldPlaySounds"] = value;
             }
         }
     }

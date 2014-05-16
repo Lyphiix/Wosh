@@ -6,5 +6,6 @@
         MinWidth="500"
         MinHeight="250"
         WindowStartupLocation="CenterScreen"
-        KeyDown="KeyPressed">
+        KeyDown="KeyPressed"
+        Loaded="OnLoaded">
 </Window>

@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 
 namespace Wosh
 {
@@ -44,13 +45,29 @@ namespace Wosh
                 ExcludedPipelinesTextBox.IsEnabled = false;
             }
             ExcludedPipelinesTextBox.Text = Config.Default.ExcludedPipelines;
-            
-            ExcludedProjectsCBox.IsChecked = Config.Default.ShouldExcludeProjects;
-            if (!ExcludedProjectsCBox.IsChecked.Value)
+
+            ShouldShowBrokenProjectsCBox.IsChecked = Config.Default.ShouldShowBrokenStages;
+
+            ShouldAutoExcludeOldProjectsCBox.IsChecked = Config.Default.ShouldAutoExcludeOldProjects;
+            if (!ShouldAutoExcludeOldProjectsCBox.IsChecked.Value)
             {
-                ExcludedProjectsTextBox.IsEnabled = false;
+                ExcludeProjectsAfterDaysTextBox.IsEnabled = false;
             }
-            ExcludedProjectsTextBox.Text = Config.Default.ExcludedProjects;
+
+            ExcludeProjectsAfterDaysTextBox.Text = Config.Default.ExcludeProjectsAfterDays.ToString(CultureInfo.InvariantCulture);
+
+            PlaySoundsCBox.IsChecked = Config.Default.ShouldPlaySounds;
+            if (!PlaySoundsCBox.IsChecked.Value)
+            {
+                SucceedSoundTextBox.IsEnabled = false;
+                FailSoundTextBox.IsEnabled = false;
+                BrowseSucceedButton.IsEnabled = false;
+                BrowseFailButton.IsEnabled = false;
+            }
+
+            SucceedSoundTextBox.Text = Config.Default.SuccededSound;
+
+            FailSoundTextBox.Text = Config.Default.FailedSound;
 
             ShouldDisplayWarning = true;
         }
@@ -79,21 +96,9 @@ namespace Wosh
             }
             Config.Default.ShouldExcludePipelines = ExcludedPipelinesCBox.IsChecked.Value;
             Config.Default.ExcludedPipelines = ExcludedPipelinesTextBox.Text;
-            using (var reader = new StringReader(ExcludedProjectsTextBox.Text))
-            {
-                // Loop over the lines in the string.
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    ParentWoshWindow.XmlParser.ExcludedProjects.Add(line);
-                }
-            }
-
-            Config.Default.ShouldExcludeProjects = ExcludedProjectsCBox.IsChecked.Value;
-            Config.Default.ExcludedProjects = ExcludedProjectsTextBox.Text;
             using (var reader = new StringReader(ExcludedPipelinesTextBox.Text))
             {
-                
+                // Loop over the lines in the string.
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
@@ -101,10 +106,32 @@ namespace Wosh
                 }
             }
 
+            Config.Default.ShouldShowBrokenStages = ShouldShowBrokenProjectsCBox.IsChecked.Value;
+
+            Config.Default.ShouldAutoExcludeOldProjects = ShouldAutoExcludeOldProjectsCBox.IsChecked.Value;
+
+            try
+            {
+                Config.Default.ExcludeProjectsAfterDays = int.Parse(ExcludeProjectsAfterDaysTextBox.Text);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Please put a whole number in Exclude Projects After (Days)::", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            Config.Default.ShouldPlaySounds = PlaySoundsCBox.IsChecked.Value;
+
+            Config.Default.SuccededSound = SucceedSoundTextBox.Text;
+
+            Config.Default.FailedSound = FailSoundTextBox.Text;
+
             Config.Default.Save();
 
             ParentWoshWindow.XmlParser.ShouldExcludePipelines = Config.Default.ShouldExcludePipelines;
-            ParentWoshWindow.XmlParser.ShouldExcludeProjects = Config.Default.ShouldExcludeProjects;
+            ParentWoshWindow.XmlParser.ShouldRemoveAfterExpirary = Config.Default.ShouldAutoExcludeOldProjects;
+            ParentWoshWindow.XmlParser.ShouldShowBrokenProjects = Config.Default.ShouldShowBrokenStages;
+            ParentWoshWindow.XmlParser.DaysToExpiry = Config.Default.ExcludeProjectsAfterDays;
 
             ShouldDisplayWarning = false;
             Close();
@@ -117,14 +144,14 @@ namespace Wosh
 
         private void ExcludedPipelinesCBoxChecked(object sender, RoutedEventArgs e)
         {
-            var box = (CheckBox)sender;
+            var box = (CheckBox) sender;
             ExcludedPipelinesTextBox.IsEnabled = box.IsChecked.Value;
         }
 
-        private void ExcludedProjectsCBoxChecked(object sender, RoutedEventArgs e)
+        private void ShouldAutoExcludeOldProjectsCBoxChecked(object sender, RoutedEventArgs e)
         {
-            var box = (CheckBox)sender;
-            ExcludedProjectsTextBox.IsEnabled = box.IsChecked.Value;
+            var box = (CheckBox) sender;
+            ExcludeProjectsAfterDaysTextBox.IsEnabled = box.IsChecked.Value;
         }
 
         public void ShowWarning(CancelEventArgs e)
@@ -144,6 +171,35 @@ namespace Wosh
                 ShowWarning(e);
             }
             ShouldDisplayWarning = true;
+        }
+
+        private void PlaySoundsCBoxChecked(object sender, RoutedEventArgs e)
+        {
+            var box = (CheckBox) sender;
+            FailSoundTextBox.IsEnabled = box.IsChecked.Value;
+            BrowseFailButton.IsEnabled = box.IsChecked.Value;
+            SucceedSoundTextBox.IsEnabled = box.IsChecked.Value;
+            BrowseSucceedButton.IsEnabled = box.IsChecked.Value;
+        }
+
+        private void BrowseFailSound(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3|All files (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                FailSoundTextBox.Text = openFileDialog.FileName;
+            }
+        }
+
+        private void BrowseSucceedSound(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "MP3 files (*.mp3)|*.mp3|All files (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                SucceedSoundTextBox.Text = openFileDialog.FileName;
+            }
         }
     }
 }
