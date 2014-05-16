@@ -90,20 +90,27 @@ namespace Wosh
                 {
                     x = webClient.DownloadString(Config.Default.URLToParse);
                 }
+                catch (WebException)
+                {
+                    DrawErrorScreen();
+                }
                 catch (Exception)
                 {
-                    MessageBox.Show("Failed to download string - please check that the correct URL is set", "Invalid URL");
+                    OldProjects = Projects = new List<Project>();
+                    Pipelines = new List<Pipeline>();
                 }
                 OldProjects = Projects = XmlParser.ParseString(x);
                 Pipelines = XmlParser.ParseToPipeline(Projects);
             }
 
-            _canvas = new Canvas();
+            _canvas = new Canvas {Background = new SolidColorBrush(Colors.Black)};
+
+            CalculateMaximums();
         }
 
         public void ForceRedraw()
         {
-            DrawScreen(Pipelines);
+            TimerScreenDraw();
         }
 
         // Calculates the maximums for Columns and Rows - Columns is retrieved from config and Rows is calculated
@@ -116,7 +123,12 @@ namespace Wosh
         // Called by timer - Redraws the screen
         private void OnTimedEvent(object source, EventArgs eventArgs)
         {
-            Console.WriteLine("Timer went off!");
+            TimerScreenDraw();
+        }
+
+        private void TimerScreenDraw()
+        {
+            Console.WriteLine("Drawing..");
             using (var webClient = new WebClient())
             {
                 try
@@ -126,49 +138,79 @@ namespace Wosh
                     DrawScreen(Pipelines = XmlParser.ParseToPipeline(Projects));
                     SoundHandler.PlaySound(OldProjects, Projects);
                 }
+                catch (WebException)
+                {
+                    Console.WriteLine("Caught Web Exception");
+                    DrawErrorScreen();
+                }
+                catch (System.Xml.XmlException)
+                {
+                    var result = MessageBox.Show("An invalid URL was parsed - please double check the URL preference",
+                                                 "Invalid URL", MessageBoxButton.OK, MessageBoxImage.Error);
+                    if (result == MessageBoxResult.OK)
+                    {
+                        try
+                        {
+                            ConfigurationWindow.Show();
+                            ConfigurationWindow.Activate();
+                            ConfigurationWindow.UrlTextBox.Focus();
+                        }
+                        catch (Exception)
+                        {
+                            ConfigurationWindow = new WoshConfigurationWindow(this);
+                            ConfigurationWindow.Show();
+                            ConfigurationWindow.Activate();
+                            ConfigurationWindow.UrlTextBox.Focus();
+                        }
+                    }
+                }
                 catch (Exception)
                 {
-                    ForceRedraw();
-                    Console.WriteLine("Failed to download string from URL");
+                    Console.WriteLine("Error");
                 }
             }
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
-            ForceRedraw();
+            DrawScreen(Pipelines);
         }
 
         // Draws the display on the window
         private void DrawScreen(List<Pipeline> pipelines)
         {
+            Console.WriteLine("Test");
             _canvas.Children.Clear();
-            CalculateMaximums();
             var pipelineArray = pipelines.ToArray();
             var counter = 0;
             for (var i = 0; i < Columns; i++)
             {
-                if ((Columns != 1) && (i == (Columns - 1)))
-                {
-                    Rows = pipelines.Count - counter;
-                }
                 for (var j = 0; j < Rows; j++)
                 {
-                    try
+                    if (pipelineArray.Count() != 0)
                     {
-                        DrawPipelineSegment(i, j, (Pipeline)pipelineArray.GetValue(counter));
+                        try
+                        {
+                            DrawPipelineSegment(i, j, (Pipeline)pipelineArray.GetValue(counter));
+                            counter++;
+                        }
+                        catch (Exception)
+                        {
+                            counter--;
+                        }
                     }
-                    catch (Exception)
-                    {
-                        Console.WriteLine("There are more rows than needed");
-                    }
-                    counter++;
                 }
             }
             Content = _canvas; // Add this segment to the screens content
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
+        }
+
+        private void DrawErrorScreen()
+        {
+            _canvas.Children.Clear();
+            Console.WriteLine("Drawing Error Screen - TODO - MAKE THE ACTUAL ERROR SCREEN");
         }
 
         // Draws a single segment
@@ -187,25 +229,31 @@ namespace Wosh
             Canvas.SetTop(rectangle, row*rectangle.Height);
             _canvas.Children.Add(rectangle);
 
-            var viewBox = new Viewbox // Scales the containing elements
-                {
-                    MinWidth = (rectangle.Width / 100) * 80,
-                    MaxWidth = (rectangle.Width / 100) * 80,
-                    MinHeight = (rectangle.Height / 100) * 90,
-                    MaxHeight = (rectangle.Height / 100) * 90
-                };
-            Canvas.SetLeft(viewBox, (column*rectangle.Width) + ((rectangle.Width/100)*10));
-            Canvas.SetTop(viewBox, (row*rectangle.Height));
-
             var textBlock = new TextBlock // Contains the name of the Pipeline to display
                 {
                     Text = pipeline.Name,
-                    Foreground = new SolidColorBrush(Colors.Black),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
+                    Foreground = new SolidColorBrush(Colors.Black)
                 };
-            textBlock.Measure(new Size(rectangle.Width, rectangle.Height));
-            textBlock.Arrange(new Rect(new Size(rectangle.Width, rectangle.Height)));
+
+            var viewBox = new Viewbox // Scales the containing elements
+            {
+                MaxWidth = (rectangle.Width / 100) * 80,
+                MinHeight = (rectangle.Height/100)*90,
+                MaxHeight = (rectangle.Height / 100) * 90
+            };
+            Canvas.SetLeft(viewBox, (column * rectangle.Width) + ((rectangle.Width / 100) * 10));
+            Canvas.SetTop(viewBox, (row * rectangle.Height));
+            
+            if (pipeline.IsBrokenProject)
+            {
+                textBlock.TextAlignment = TextAlignment.Left;
+                //viewBox.MinWidth = (rectangle.Width / 100) * 70;
+                //viewBox.MaxWidth = (rectangle.Width / 100) * 70;
+            }
+            else
+            {
+                viewBox.MinWidth = (rectangle.Height / 100) * 80;
+            }
 
             viewBox.Child = textBlock;
             _canvas.Children.Add(viewBox);

@@ -5,7 +5,7 @@
         Height="500" Width="300"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     <Grid>
-        <Label Content="URl:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
+        <Label Content="URL:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75"/>
         <TextBox Name="UrlTextBox" HorizontalAlignment="Left" Margin="90,14,0,0" VerticalAlignment="Top" Width="181"/>
         <Label Content="Poll Speed:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="75"/>
         <TextBox Name="PollSpeedTextBox" HorizontalAlignment="Left" Margin="90,45,0,0" VerticalAlignment="Top" Width="181"/>
