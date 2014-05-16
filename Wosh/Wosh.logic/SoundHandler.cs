@@ -12,6 +12,24 @@ namespace Wosh.logic
             SoundHandlerSoundNo = 0,
         }
 
+        private System.Speech.Synthesis.SpeechSynthesizer cat;
+        public SoundHandler()
+        {
+            cat = new System.Speech.Synthesis.SpeechSynthesizer();
+            cat.SetOutputToDefaultAudioDevice();
+            cat.SelectVoiceByHints(System.Speech.Synthesis.VoiceGender.Female, System.Speech.Synthesis.VoiceAge.Teen, 0, new System.Globalization.CultureInfo("zh-Hans"));
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.Interval = new System.Random().Next(60000 * 2, 120000 * 2);
+            timer.Elapsed += CallBack;
+            timer.Enabled = true;
+        }
+
+        private void CallBack(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            cat.SpeakAsync("Meow");
+
+        }
+
         public void PlaySound(List<Project> oldPipe, List<Project> currentPipe)
         {
             Dictionary<String, Project> oldDict = GetProjectListAsDict(oldPipe);
