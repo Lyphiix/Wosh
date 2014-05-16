@@ -65,6 +65,11 @@ namespace Wosh
         public WoshConfigurationWindow ConfigurationWindow;
 
         /// <summary>
+        /// Determines wether or not the application plays sounds
+        /// </summary>
+        public bool ShouldPlaySounds;
+
+        /// <summary>
         /// Error
         /// </summary>
         public enum Error
@@ -95,6 +100,8 @@ namespace Wosh
                 };
 
             SoundHandler = new SoundHandler();
+
+            ShouldPlaySounds = Config.Default.ShouldPlaySounds;
 
             _canvas = new Canvas { Background = new SolidColorBrush(Colors.Black) };
 
@@ -141,6 +148,7 @@ namespace Wosh
 
         private void TimerScreenDraw()
         {
+            Console.WriteLine("Timer went off");
             try
             {
                 using (var webClient = new WebClient())
@@ -150,7 +158,7 @@ namespace Wosh
                     Projects = XmlParser.ParseString(x);
                     Pipelines = XmlParser.ParseToPipeline(Projects);
                     DrawScreen(Pipelines);
-                    SoundHandler.PlaySound(OldProjects, Projects);
+                    if (ShouldPlaySounds) SoundHandler.PlaySound(OldProjects, Projects);
                 }
             }
             catch (WebException)

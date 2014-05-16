@@ -133,6 +133,8 @@ namespace Wosh
             ParentWoshWindow.XmlParser.ShouldShowBrokenProjects = Config.Default.ShouldShowBrokenStages;
             ParentWoshWindow.XmlParser.DaysToExpiry = Config.Default.ExcludeProjectsAfterDays;
 
+            ParentWoshWindow.ShouldPlaySounds = Config.Default.ShouldPlaySounds;
+
             ShouldDisplayWarning = false;
             Close();
 
