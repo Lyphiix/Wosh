@@ -35,5 +35,8 @@
     <Setting Name="ShouldPlaySounds" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="BrokenProjectKey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">[-&gt; </Value>
+    </Setting>
   </Settings>
 </SettingsFile>

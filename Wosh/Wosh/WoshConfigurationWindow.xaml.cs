@@ -48,6 +48,12 @@ namespace Wosh
 
             ShouldShowBrokenProjectsCBox.IsChecked = Config.Default.ShouldShowBrokenStages;
 
+            if (!ShouldShowBrokenProjectsCBox.IsChecked.Value)
+            {
+                BrokenProjectKeyTextBox.IsEnabled = false;
+            }
+            BrokenProjectKeyTextBox.Text = Config.Default.BrokenProjectKey;
+
             ShouldAutoExcludeOldProjectsCBox.IsChecked = Config.Default.ShouldAutoExcludeOldProjects;
             if (!ShouldAutoExcludeOldProjectsCBox.IsChecked.Value)
             {
@@ -108,6 +114,8 @@ namespace Wosh
 
             Config.Default.ShouldShowBrokenStages = ShouldShowBrokenProjectsCBox.IsChecked.Value;
 
+            Config.Default.BrokenProjectKey = BrokenProjectKeyTextBox.Text;
+
             Config.Default.ShouldAutoExcludeOldProjects = ShouldAutoExcludeOldProjectsCBox.IsChecked.Value;
 
             try
@@ -132,6 +140,7 @@ namespace Wosh
             ParentWoshWindow.XmlParser.ShouldRemoveAfterExpirary = Config.Default.ShouldAutoExcludeOldProjects;
             ParentWoshWindow.XmlParser.ShouldShowBrokenProjects = Config.Default.ShouldShowBrokenStages;
             ParentWoshWindow.XmlParser.DaysToExpiry = Config.Default.ExcludeProjectsAfterDays;
+            ParentWoshWindow.XmlParser.BrokenProjectKey = Config.Default.BrokenProjectKey;
 
             ParentWoshWindow.ShouldPlaySounds = Config.Default.ShouldPlaySounds;
 
@@ -159,28 +168,9 @@ namespace Wosh
             ExcludeProjectsAfterDaysTextBox.IsEnabled = box.IsChecked.Value;
         }
 
-        public void ShowWarning(CancelEventArgs e)
-        {
-            var result = MessageBox.Show("Changed settings will not be saved. Close anyway?", "Warning!", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.No)
-            {
-                e.Cancel = true;
-            }
-        }
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            if (ShouldDisplayWarning)
-            {
-                ShowWarning(e);
-            }
-            ShouldDisplayWarning = true;
-        }
-
         private void PlaySoundsCBoxChecked(object sender, RoutedEventArgs e)
         {
-            var box = (CheckBox) sender;
+            var box = (CheckBox)sender;
             FailSoundTextBox.IsEnabled = box.IsChecked.Value;
             BrowseFailButton.IsEnabled = box.IsChecked.Value;
             SucceedSoundTextBox.IsEnabled = box.IsChecked.Value;
@@ -205,6 +195,31 @@ namespace Wosh
             {
                 SucceedSoundTextBox.Text = openFileDialog.FileName;
             }
+        }
+
+        private void SBSIChecked(object sender, RoutedEventArgs e)
+        {
+            var box = (CheckBox)sender;
+            BrokenProjectKeyTextBox.IsEnabled = box.IsChecked.Value;
+        }
+
+        public void ShowWarning(CancelEventArgs e)
+        {
+            var result = MessageBox.Show("Changed settings will not be saved. Close anyway?", "Warning!", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.No)
+            {
+                e.Cancel = true;
+            }
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (ShouldDisplayWarning)
+            {
+                ShowWarning(e);
+            }
+            ShouldDisplayWarning = true;
         }
     }
 }

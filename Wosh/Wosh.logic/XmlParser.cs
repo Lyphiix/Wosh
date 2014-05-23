@@ -42,7 +42,7 @@ namespace Wosh.logic
 
         public bool ShouldShowBrokenProjects;
 
-        public static String BrokenProjectKey = "[-> ";
+        public String BrokenProjectKey = "";
 
         public XmlParser()
         {

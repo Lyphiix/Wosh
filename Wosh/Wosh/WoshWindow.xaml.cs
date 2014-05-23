@@ -96,7 +96,8 @@ namespace Wosh
                 {
                     ShouldShowBrokenProjects = Config.Default.ShouldShowBrokenStages,
                     ShouldRemoveAfterExpirary = Config.Default.ShouldAutoExcludeOldProjects,
-                    DaysToExpiry = Config.Default.ExcludeProjectsAfterDays
+                    DaysToExpiry = Config.Default.ExcludeProjectsAfterDays,
+                    BrokenProjectKey = Config.Default.BrokenProjectKey
                 };
 
             SoundHandler = new SoundHandler();
