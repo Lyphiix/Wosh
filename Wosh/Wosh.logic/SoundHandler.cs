@@ -50,6 +50,7 @@ namespace Wosh.logic
                     if (!currentP.Activity.Equals("Building"))
                     {
                         // TODO - make the sounds work
+
                     }
                 }
             }
