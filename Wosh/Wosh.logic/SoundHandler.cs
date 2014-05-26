@@ -35,73 +35,40 @@ namespace Wosh.logic
         public String FailSound;
         public String SuccessSound;
 
-        public void PlaySound(List<Project> oldPipe, List<Project> currentPipe)
+        public void PlaySound(List<Project> old, List<Project> current)
         {
-            Dictionary<String, Project> oldDict = GetProjectListAsDict(oldPipe);
-            Dictionary<String, Project> newDict = GetProjectListAsDict(currentPipe);
+            bool fail = false;
+            bool succeed = false;
 
-            bool failSound = false;
-            bool successSound = false;
+            var oldDict = GetProjectListAsDict(old);
+            var currentDict = GetProjectListAsDict(current);
 
-            foreach (String key in oldDict.Keys)
+            foreach (Project oldP in oldDict.Values)
             {
-                Project pold;
-                if (oldDict.TryGetValue(key, out pold))
+                foreach (Project currentP in currentDict.Values)
                 {
-                    Project pnew;
-                    if (newDict.TryGetValue(key, out pnew))
+                    if (!currentP.Activity.Equals("Building"))
                     {
-                        if (!pold.Status().Equals(pnew.Status()))
-                        {
-                            switch (pnew.Status())
-                            {
-                                case SoundHandlerSoundType.SoundHandlerSoundFail:
-                                    failSound = true;
-                                    break;
-                                case SoundHandlerSoundType.SoundHandlerSoundSuccess:
-                                    successSound = true;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
+                        // TODO - make the sounds work
                     }
                 }
             }
 
-            if (failSound)
+            if (fail)
             {
-                if (!FailSound.Equals(""))
-                {
-                    System.Windows.Media.MediaPlayer x = new System.Windows.Media.MediaPlayer();
-                    x.Open(new Uri(FailSound));
-                    x.Play();
-                }
-                else
-                {
-                    System.Media.SystemSounds.Hand.Play();
-                    System.Threading.Thread.Sleep(1000);
-                }
+
+            }
+            if (succeed)
+            {
+
             }
 
-            if (successSound)
+            System.Threading.ThreadPool.QueueUserWorkItem(callback =>
             {
-                if (!SuccessSound.Equals(""))
-                {
-                    System.Threading.ThreadPool.QueueUserWorkItem(callback => {
-                        System.Windows.Media.MediaPlayer x = new System.Windows.Media.MediaPlayer();
-                        x.Open(new Uri(SuccessSound));
-                        x.Play();
-                    });
-                }
-                else
-                {
-                    System.Media.SystemSounds.Exclamation.Play();
-                    System.Threading.Thread.Sleep(1000);
-                }
-            }
-
-            Console.WriteLine("Success: {0} Sound, Failure: {1} Sound", successSound ? "Played" : "Didn't Play", failSound ? "Played" : "Didn't Play");
+                System.Windows.Media.MediaPlayer x = new System.Windows.Media.MediaPlayer();
+                x.Open(new Uri(SuccessSound));
+                x.Play();
+            });
         }
 
         private Dictionary<String, Project> GetProjectListAsDict(List<Project> input)

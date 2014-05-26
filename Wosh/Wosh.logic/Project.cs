@@ -18,21 +18,7 @@ namespace Wosh.logic
         public String WebUrl;
 
         public bool HasPlayedSound;
-        public SoundHandler.SoundHandlerSoundType Status()
-        {
-            if (Activity.Equals("Building"))
-            {
-                return SoundHandler.SoundHandlerSoundType.SoundHandlerSoundNo;
-            } else if (LastBuildStatus.Equals("Success"))
-            {
-                return SoundHandler.SoundHandlerSoundType.SoundHandlerSoundSuccess;
-            }
-            else if (LastBuildStatus.Equals("Failure"))
-            {
-                return SoundHandler.SoundHandlerSoundType.SoundHandlerSoundFail;
-            }
-            return SoundHandler.SoundHandlerSoundType.SoundHandlerSoundNo;
-        }
+        
     }
     public class Pipeline
     {
